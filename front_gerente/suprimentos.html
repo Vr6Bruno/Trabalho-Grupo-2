@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Estok - Suprimentos</title>
+    <link rel="stylesheet" href="suprimentos.css">
+</head>
+
+<body>
+    <!-- MENU LATERAL: mostrar só as abas que o perfil atual pode acessar.
+        Aba da página atual recebe a classe "ativo". Preencher os href. -->
+    <nav class="navegador">
+        <h1 class="titulo">Estok</h1>
+        <ul class="box_lista">
+            <li class="lista"><a class="botao" href="">Solicitações</a></li>
+            <li class="lista"><a class="botao ativo" href="suprimentos.html">Suprimentos</a></li>
+            <li class="lista"><a class="botao" href="">Estoque</a></li>
+            <li class="lista"><a class="botao" href="">Pedidos</a></li>
+        </ul>
+    </nav>
+
+    <div class="bloco_conteudo">
+        <!-- CABEÇALHO: dados do usuário logado. Preencher nome, entidade e perfil em uso. -->
+        <header class="cabecalho">
+            <div class="usuario">
+                <span id="usuario_nome">Nome do Usuário</span>
+                <span><span id="usuario_entidade">Entidade</span> / <span id="usuario_perfil">Perfil</span></span>
+            </div>
+            <div class="avatar"></div>
+        </header>
+
+        <main class="principal">
+
+            <div class="topo_pagina">
+                <div>
+                    <h2>Catálogo de Suprimentos</h2>
+                    <p>Gerencie o estoque e os itens disponíveis para chamados.</p>
+                </div>
+                <!-- Botão visível só para GESTOR. Preencher href com a tela de cadastro. -->
+                <a class="botao botao_destaque" href="novo_suprimento.html">+ Novo suprimento</a>
+            </div>
+
+            <!-- CARDS DE RESUMO: preencher cada número pelo id.
+                 Críticos = estoque <= mínimo. -->
+            <section class="resumo">
+                <div class="card_resumo">
+                    <strong id="total">0</strong>
+                    <span>Total</span>
+                </div>
+                <div class="card_resumo verde">
+                    <strong id="ativos">0</strong>
+                    <span>Ativos</span>
+                </div>
+                <div class="card_resumo vermelho">
+                    <strong id="criticos">0</strong>
+                    <span>Críticos</span>
+                </div>
+                <div class="card_resumo cinza">
+                    <strong id="inativos">0</strong>
+                    <span>Inativos</span>
+                </div>
+            </section>
+
+            <!-- FILTROS: o "name" de cada campo é o parâmetro enviado ao back.
+                 Definir action (rota). Status: 1 = ativo, 0 = inativo, vazio = todos.
+                 Checkbox "critico" só chega marcado quando ligado. -->
+            <form class="filtros" method="get" action="">
+                <label>Nome ou código
+                    <input type="text" name="busca">
+                </label>
+
+                <!-- uma <option value="id_categoria"> por categoria cadastrada -->
+                <!-- <label>Categoria
+                    <select name="categoria">
+                        <option value="">Todas as categorias</option>    
+                    </select>
+                </label> -->
+
+                <label>Status
+                    <select name="status">
+                        <option value="1">Ativos</option>
+                        <option value="0">Inativos</option>
+                        <option value="">Todos</option>
+                    </select>
+                </label>
+                <label class="check">
+                    <input type="checkbox" name="critico"> Estoque crítico
+                </label>
+                <button type="submit" class="botao botao_destaque">Pesquisar</button>
+            </form>
+
+            <div class="box_tabela">
+                <table class="tabela">
+
+                    <thead>
+                        <tr>
+                            <th data-tipo="texto">Suprimento</th>
+                            <th data-tipo="texto">Código interno</th>
+                            <!-- <th>Categoria</th> -->
+                            <th data-tipo="texto">Unid.</th>
+                            <!-- <th>Localidade</th> -->
+                            <th data-tipo="numero">Mín.</th>
+                            <th data-tipo="numero">Estoque</th>
+                            <th data-tipo="texto">Status</th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+                        <!-- UMA <tr> POR SUPRIMENTO, gerada pelo back-end.
+                            Estoque: estoque_critico se estoque <= mínimo; senão estoque_ok.
+                            Status: status_ativo ou status_inativo. -->
+
+                        <!-- Exemplos para visualizar o CSS (apagar depois) -->
+                        <tr>
+                            <td>Papel A4</td>
+                            <td>PA-01</td>
+                            <td>resma</td>
+                            <td>10</td>
+                            <td><span class="estoque estoque_critico">0</span></td>
+                            <td><span class="status status_ativo">Ativo</span></td>
+                        </tr>
+                        <tr>
+                            <td>Caneta azul</td>
+                            <td>CA-02</td>
+                            <td>un</td>
+                            <td>10</td>
+                            <td><span class="estoque estoque_ok">70</span></td>
+                            <td><span class="status status_ativo">Ativo</span></td>
+                        </tr>
+                        <tr>
+                            <td>Grampeador</td>
+                            <td>GR-03</td>
+                            <td>un</td>
+                            <td>5</td>
+                            <td><span class="estoque estoque_critico">5</span></td>
+                            <td><span class="status status_ativo">Ativo</span></td>
+                        </tr>
+                        <tr>
+                            <td>Toner preto</td>
+                            <td>TN-04</td>
+                            <td>un</td>
+                            <td>2</td>
+                            <td><span class="estoque estoque_ok">8</span></td>
+                            <td><span class="status status_inativo">Inativo</span></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+        </main>
+
+    </div>
+
+    <!-- ORDENAÇÃO DA TABELA: clique no cabeçalho alterna crescente/decrescente.
+                        Funciona sobre as linhas que estão na página; não precisa de back-end. -->
+    <script>
+        const tabela = document.querySelector(".tabela");
+        const cabecalhos = tabela.querySelectorAll("th[data-tipo]");
+
+        cabecalhos.forEach(th => {
+            th.addEventListener("click", () => {
+                const crescente = !th.classList.contains("asc");
+
+                cabecalhos.forEach(c => c.classList.remove("asc", "desc"));
+                th.classList.add(crescente ? "asc" : "desc");
+
+                const tbody = tabela.tBodies[0];
+                const linhas = Array.from(tbody.rows);
+                const coluna = th.cellIndex;
+                const numerico = th.dataset.tipo === "numero";
+
+                linhas.sort((a, b) => {
+                    const x = a.cells[coluna].textContent.trim();
+                    const y = b.cells[coluna].textContent.trim();
+                    const r = numerico
+                        ? parseFloat(x) - parseFloat(y)
+                        : x.localeCompare(y, "pt-BR", { sensitivity: "base", numeric: true });
+                    return crescente ? r : -r;
+                });
+
+                linhas.forEach(l => tbody.appendChild(l));
+            });
+        });
+    </script>
+</body>
+
+
+
+</html>
