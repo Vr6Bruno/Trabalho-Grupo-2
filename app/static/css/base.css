@@ -1,0 +1,108 @@
+* {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    min-height: 100vh;
+    display: flex;
+    font-family: Arial, Helvetica, sans-serif;
+    background-color: #ffffff;
+    color: #222;
+}
+
+/* ---------- Menu lateral ---------- */
+.navegador {
+    width: 200px;
+    flex-shrink: 0;
+    background-color: #001dbe;
+}
+
+.titulo {
+    margin: 0;
+    height: 80px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 800;
+    color: white;
+}
+
+.box_lista {
+    margin: 30px 0 0;
+    padding: 0;
+}
+
+.lista {
+    list-style-type: none;
+    margin-bottom: 10px;
+}
+
+/* ---------- Botões ---------- */
+.botao {
+    display: block;
+    padding: 8px;
+    text-align: center;
+    color: black;
+    background-color: whitesmoke;
+    border-radius: 2px;
+    text-decoration: none;
+    font-size: 0.95rem;
+    font-family: inherit;
+    cursor: pointer;
+    margin-left: 10px;
+    margin-right: 10px;
+}
+
+.botao:hover,
+.botao.ativo {
+    background-color: rgb(255, 196, 0);
+}
+
+.botao_destaque {
+    padding: 8px 16px;
+    background-color: #ffffff;
+    border: 1px black solid;
+}
+
+/* ---------- Cabeçalho ---------- */
+.bloco_conteudo {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+}
+
+.cabecalho {
+    height: 80px;
+    padding: 0 20px;
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 15px;
+    background-color: #001dbe;
+}
+
+.usuario {
+    display: flex;
+    flex-direction: column;
+    text-align: right;
+    font-size: 0.9rem;
+}
+
+.usuario span {
+    color: white;
+    font-size: 15px;
+}
+
+.avatar {
+    width: 50px;
+    height: 50px;
+    border-radius: 5px;
+    background-color: #ffffff;
+}
+
+/* ---------- Conteúdo Base ---------- */
+.principal {
+    padding: 30px 40px;
+}

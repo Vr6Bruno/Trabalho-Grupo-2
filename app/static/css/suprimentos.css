@@ -1,0 +1,175 @@
+/* ---------- Topo da Página ---------- */
+.topo_pagina {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 20px;
+    margin-bottom: 25px;
+}
+
+.topo_pagina h2 {
+    margin: 0 0 4px;
+}
+
+.topo_pagina p {
+    margin: 0;
+    color: #666;
+    font-size: 0.9rem;
+}
+
+/* ---------- Cards de resumo ---------- */
+.resumo {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    gap: 15px;
+    margin-bottom: 25px;
+}
+
+.card_resumo {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    padding: 14px 16px;
+    background-color: #f5f5f5;
+    border-left: 4px solid #e0a800;
+}
+
+.card_resumo.verde {
+    border-left-color: #2e8b57;
+}
+
+.card_resumo.vermelho {
+    border-left-color: #c62828;
+}
+
+.card_resumo.cinza {
+    border-left-color: #555;
+}
+
+.card_resumo strong {
+    font-size: 1.4rem;
+}
+
+.card_resumo span {
+    font-size: 0.85rem;
+    color: #666;
+}
+
+/* ---------- Filtros ---------- */
+.filtros {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-end;
+    gap: 15px;
+    margin-bottom: 24px;
+    padding: 14px 16px;
+    background-color: #f5f5f5;
+    font-size: 0.85rem;
+}
+
+.filtros label {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    font-weight: bold;
+}
+
+.filtros input[type="text"],
+.filtros select {
+    padding: 6px;
+    border: 1px solid #888;
+    font-size: 0.9rem;
+}
+
+.filtros .check {
+    flex-direction: row;
+    align-items: center;
+    padding-bottom: 8px;
+    font-weight: normal;
+}
+
+.filtros .botao {
+    margin: 0;
+}
+
+/* ---------- Tabela ---------- */
+.box_tabela {
+    overflow-x: auto;
+}
+
+.tabela {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.tabela th,
+.tabela td {
+    padding: 10px;
+    text-align: left;
+    border-bottom: 1px solid #ddd;
+    white-space: nowrap;
+}
+
+.tabela th {
+    background-color: #d9d9d9;
+    font-size: 0.85rem;
+}
+
+.tabela td a {
+    color: #001dbe;
+    font-weight: bold;
+    text-decoration: none;
+}
+
+.tabela td a:hover {
+    text-decoration: underline;
+}
+
+.status,
+.estoque {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 3px;
+    font-size: 0.8rem;
+    font-weight: bold;
+}
+
+.status_ativo,
+.estoque_ok {
+    background-color: #e3f4e8;
+    color: #2e7d4f;
+}
+
+.status_inativo {
+    background-color: #e0e0e0;
+    color: #555;
+}
+
+.estoque_critico {
+    background-color: #c62828;
+    color: #ffffff;
+}
+
+.tabela th[data-tipo] {
+    cursor: pointer;
+    user-select: none;
+}
+
+.tabela th[data-tipo]:hover {
+    background-color: #c9c9c9;
+}
+
+.tabela th[data-tipo]::after {
+    content: " ↕";
+    color: #888;
+}
+
+.tabela th.asc::after {
+    content: " ▲";
+    color: #222;
+}
+
+.tabela th.desc::after {
+    content: " ▼";
+    color: #222;
+}

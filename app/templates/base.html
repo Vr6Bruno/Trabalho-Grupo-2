@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{% block title %}Estok{% endblock %}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/base.css') }}">
+    {% block extra_css %}{% endblock %}
+</head>
+
+<body>
+    <!-- MENU LATERAL -->
+    <nav class="navegador">
+        <h1 class="titulo">Estok</h1>
+        <ul class="box_lista">
+            <li class="lista"><a class="botao" href="#">Solicitações</a></li>
+            <li class="lista"><a class="botao {% block nav_suprimentos_active %}ativo{% endblock %}" href="{{ url_for('suprimentos.lista') }}">Suprimentos</a></li>
+            <li class="lista"><a class="botao" href="#">Estoque</a></li>
+            <li class="lista"><a class="botao" href="#">Pedidos</a></li>
+        </ul>
+    </nav>
+
+    <div class="bloco_conteudo">
+        <!-- CABEÇALHO -->
+        <header class="cabecalho">
+            <div class="usuario">
+                <span id="usuario_nome">{{ usuario.nome }}</span>
+                <span><span id="usuario_entidade">{{ usuario.entidade }}</span> / <span id="usuario_perfil">{{ usuario.perfil }}</span></span>
+            </div>
+            <div class="avatar"></div>
+        </header>
+
+        <!-- CONTEÚDO PRINCIPAL -->
+        <main class="principal">
+            {% block content %}{% endblock %}
+        </main>
+    </div>
+
+    {% block extra_js %}{% endblock %}
+</body>
+
+</html>

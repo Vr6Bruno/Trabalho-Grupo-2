@@ -1,0 +1,131 @@
+{% extends "base.html" %}
+
+{% block title %}Estok - Suprimentos{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/suprimentos.css') }}">
+{% endblock %}
+
+{% block content %}
+<div class="topo_pagina">
+    <div>
+        <h2>Catálogo de Suprimentos</h2>
+        <p>Gerencie o estoque e os itens disponíveis para chamados.</p>
+    </div>
+    <a class="botao botao_destaque" href="{{ url_for('suprimentos.novo') }}">+ Novo suprimento</a>
+</div>
+
+<!-- CARDS DE RESUMO -->
+<section class="resumo">
+    <div class="card_resumo">
+        <strong id="total">{{ resumo.total }}</strong>
+        <span>Total</span>
+    </div>
+    <div class="card_resumo verde">
+        <strong id="ativos">{{ resumo.ativos }}</strong>
+        <span>Ativos</span>
+    </div>
+    <div class="card_resumo vermelho">
+        <strong id="criticos">{{ resumo.criticos }}</strong>
+        <span>Críticos</span>
+    </div>
+    <div class="card_resumo cinza">
+        <strong id="inativos">{{ resumo.inativos }}</strong>
+        <span>Inativos</span>
+    </div>
+</section>
+
+<!-- FILTROS -->
+<form class="filtros" method="get" action="{{ url_for('suprimentos.lista') }}">
+    <label>Nome ou código
+        <input type="text" name="busca" value="{{ filtros.busca }}">
+    </label>
+
+    <label>Status
+        <select name="status">
+            <option value="1" {{ 'selected' if filtros.status == '1' }}>Ativos</option>
+            <option value="0" {{ 'selected' if filtros.status == '0' }}>Inativos</option>
+            <option value="" {{ 'selected' if filtros.status == '' }}>Todos</option>
+        </select>
+    </label>
+
+    <label class="check">
+        <input type="checkbox" name="critico" {{ 'checked' if filtros.critico }}> Estoque crítico
+    </label>
+
+    <button type="submit" class="botao botao_destaque">Pesquisar</button>
+</form>
+
+<!-- TABELA -->
+<div class="box_tabela">
+    <table class="tabela">
+        <thead>
+            <tr>
+                <th data-tipo="texto">Suprimento</th>
+                <th data-tipo="texto">Código interno</th>
+                <th data-tipo="texto">Unid.</th>
+                <th data-tipo="numero">Mín.</th>
+                <th data-tipo="numero">Estoque</th>
+                <th data-tipo="texto">Status</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for s in suprimentos %}
+            <tr>
+                <td><a href="{{ url_for('suprimentos.editar', id=s.id) }}">{{ s.nome }}</a></td>
+                <td>{{ s.codigo_interno or '-' }}</td>
+                <td>{{ s.unidade_medida or '-' }}</td>
+                <td>{{ s.estoque_minimo }}</td>
+                <td>
+                    <span class="estoque {{ 'estoque_critico' if s.critico else 'estoque_ok' }}">{{ s.estoque_atual }}</span>
+                </td>
+                <td>
+                    {% if s.status %}
+                    <span class="status status_ativo">Ativo</span>
+                    {% else %}
+                    <span class="status status_inativo">Inativo</span>
+                    {% endif %}
+                </td>
+            </tr>
+            {% else %}
+            <tr>
+                <td colspan="6">Nenhum suprimento encontrado.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<!-- ORDENAÇÃO DA TABELA: clique no cabeçalho alterna crescente/decrescente. -->
+<script>
+    const tabela = document.querySelector(".tabela");
+    const cabecalhos = tabela.querySelectorAll("th[data-tipo]");
+
+    cabecalhos.forEach(th => {
+        th.addEventListener("click", () => {
+            const crescente = !th.classList.contains("asc");
+
+            cabecalhos.forEach(c => c.classList.remove("asc", "desc"));
+            th.classList.add(crescente ? "asc" : "desc");
+
+            const tbody = tabela.tBodies[0];
+            const linhas = Array.from(tbody.rows);
+            const coluna = th.cellIndex;
+            const numerico = th.dataset.tipo === "numero";
+
+            linhas.sort((a, b) => {
+                const x = a.cells[coluna].textContent.trim();
+                const y = b.cells[coluna].textContent.trim();
+                const r = numerico
+                    ? parseFloat(x) - parseFloat(y)
+                    : x.localeCompare(y, "pt-BR", { sensitivity: "base", numeric: true });
+                return crescente ? r : -r;
+            });
+
+            linhas.forEach(l => tbody.appendChild(l));
+        });
+    });
+</script>
+{% endblock %}

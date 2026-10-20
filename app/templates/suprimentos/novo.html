@@ -1,0 +1,87 @@
+{% extends "base.html" %}
+
+{% block title %}Estok - {{ 'Editar Suprimento' if editando else 'Novo Suprimento' }}{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/novo_suprimento.css') }}">
+{% endblock %}
+
+{% block content %}
+<h2>{{ 'Editar Suprimento' if editando else 'Novo Suprimento' }}</h2>
+
+{% if erros %}
+<ul class="erros">
+    {% for e in erros %}
+    <li>{{ e }}</li>
+    {% endfor %}
+</ul>
+{% endif %}
+
+<!-- Sem "action": o formulário envia para a própria página (serve para novo e editar) -->
+<form class="formulario" method="post">
+
+    <div class="secoes">
+        <section class="secao">
+            <h3>Identificação</h3>
+            <div class="campos">
+                <label class="campo">
+                    <span>Nome <span class="obrigatorio">*</span></span>
+                    <input type="text" name="nome" value="{{ suprimento.nome or '' }}" required>
+                </label>
+
+                <label class="campo">Código interno
+                    <input type="text" name="codigo_interno" value="{{ suprimento.codigo_interno or '' }}">
+                </label>
+
+                <label class="campo">Status
+                    <select name="status">
+                        <option value="1" {{ 'selected' if suprimento.status == 1 }}>Ativo</option>
+                        <option value="0" {{ 'selected' if suprimento.status == 0 }}>Inativo</option>
+                    </select>
+                </label>
+
+                <label class="campo">Unidade de medida
+                    <input type="text" name="unidade_medida" value="{{ suprimento.unidade_medida or '' }}">
+                </label>
+
+                <label class="campo largo">Descrição
+                    <textarea name="descricao" rows="4">{{ suprimento.descricao or '' }}</textarea>
+                </label>
+            </div>
+        </section>
+
+        <section class="secao">
+            <h3>Estoque</h3>
+            <div class="campos">
+                <label class="campo">Estoque mínimo
+                    <input type="number" name="estoque_minimo" min="0" value="{{ suprimento.estoque_minimo }}">
+                    <small>Alerta ao atingir este valor</small>
+                </label>
+
+                {% if editando %}
+                <!-- Somente exibição (não é editável na alteração) -->
+                <div class="campo">
+                    <span>Estoque atual</span>
+                    <div class="estoque_atual">
+                        <strong>{{ suprimento.estoque_atual }}</strong>
+                        <small>{{ suprimento.unidade_medida or '-' }}</small>
+                    </div>
+                </div>
+                {% else %}
+                <!-- Editável somente na criação -->
+                <label class="campo">Estoque inicial
+                    <input type="number" name="estoque_atual" min="0" value="{{ suprimento.estoque_atual }}">
+                    <small>Quantidade inicial em estoque</small>
+                </label>
+                {% endif %}
+            </div>
+        </section>
+    </div>
+
+    <div class="acoes">
+        <a class="botao botao_destaque" href="{{ url_for('suprimentos.lista') }}">Cancelar</a>
+        <button type="submit" class="botao botao_primario">Salvar</button>
+    </div>
+
+</form>
+{% endblock %}
