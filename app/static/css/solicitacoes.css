@@ -1,0 +1,134 @@
+/* ---------- ESTILOS DE SOLICITAÇÕES E COMPILADO OPERACIONAL ---------- */
+
+.resumo_solicitacoes {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 15px;
+    margin-bottom: 25px;
+}
+
+.card_solicitacao_stat {
+    background: #fff;
+    border: 1px solid #e0e0e0;
+    border-radius: 4px;
+    padding: 16px 20px;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+.card_solicitacao_stat strong {
+    font-size: 2rem;
+    line-height: 1.1;
+    color: #111;
+}
+
+.card_solicitacao_stat span {
+    font-size: 0.85rem;
+    color: #666;
+    margin-top: 4px;
+    font-weight: 500;
+}
+
+.card_solicitacao_stat.azul { border-left: 5px solid #0d47a1; }
+.card_solicitacao_stat.azul strong { color: #0d47a1; }
+
+.card_solicitacao_stat.verde { border-left: 5px solid #1b5e20; }
+.card_solicitacao_stat.verde strong { color: #1b5e20; }
+
+.card_solicitacao_stat.roxo { border-left: 5px solid #4a148c; }
+.card_solicitacao_stat.roxo strong { color: #4a148c; }
+
+.card_solicitacao_stat.teal { border-left: 5px solid #004d40; }
+.card_solicitacao_stat.teal strong { color: #004d40; }
+
+.card_solicitacao_stat.cinza { border-left: 5px solid #78909c; }
+.card_solicitacao_stat.cinza strong { color: #78909c; }
+
+/* Cards de Solicitações no Compilado */
+.card_compilado {
+    background: #fff;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    margin-bottom: 25px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.04);
+    overflow: hidden;
+}
+
+.card_compilado_header {
+    background: #fbfbfb;
+    border-bottom: 1px solid #eee;
+    padding: 14px 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 12px;
+}
+
+.compilado_id_tag {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: #001dbe;
+    text-decoration: none;
+}
+
+.card_compilado_body {
+    padding: 0;
+}
+
+/* Timeline / Histórico da solicitação */
+.timeline {
+    position: relative;
+    padding-left: 24px;
+    margin-top: 15px;
+}
+
+.timeline::before {
+    content: "";
+    position: absolute;
+    left: 7px;
+    top: 5px;
+    bottom: 5px;
+    width: 2px;
+    background: #e0e0e0;
+}
+
+.timeline_item {
+    position: relative;
+    margin-bottom: 18px;
+}
+
+.timeline_dot {
+    position: absolute;
+    left: -24px;
+    top: 4px;
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    background: #001dbe;
+    border: 3px solid #fff;
+    box-shadow: 0 0 0 1px #001dbe;
+}
+
+.timeline_content {
+    font-size: 0.9rem;
+}
+
+.timeline_date {
+    font-size: 0.75rem;
+    color: #888;
+}
+
+/* Grid de Novo Pedido Dinâmico */
+.item_linha_dinamica {
+    display: grid;
+    grid-template-columns: 3fr 1fr auto;
+    gap: 12px;
+    align-items: center;
+    margin-bottom: 10px;
+    background: #fdfdfd;
+    padding: 10px;
+    border: 1px solid #eee;
+    border-radius: 4px;
+}

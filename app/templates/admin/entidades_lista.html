@@ -1,0 +1,112 @@
+{% extends "base.html" %}
+
+{% block title %}Estok - Gestão de Entidades{% endblock %}
+
+{% block nav_entidades_active %}ativo{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/admin.css') }}">
+{% endblock %}
+
+{% block content %}
+<div class="topo_pagina">
+    <div>
+        <h2>Gestão de Entidades (Clientes)</h2>
+        <p>Cadastre e gerencie as organizações e clientes atendidos pela plataforma.</p>
+    </div>
+    <a class="botao botao_destaque" href="{{ url_for('admin.entidades_novo') }}">+ Nova Entidade</a>
+</div>
+
+<!-- FILTROS -->
+<form class="filtros" method="get" action="{{ url_for('admin.entidades_lista') }}">
+    <label>Nome ou código
+        <input type="text" name="busca" value="{{ filtros.busca }}" placeholder="Buscar por nome ou sigla...">
+    </label>
+
+    <label>Status
+        <select name="status">
+            <option value="" {{ 'selected' if filtros.status == '' }}>Todos</option>
+            <option value="1" {{ 'selected' if filtros.status == '1' }}>Ativas</option>
+            <option value="0" {{ 'selected' if filtros.status == '0' }}>Inativas</option>
+        </select>
+    </label>
+
+    <button type="submit" class="botao botao_destaque">Pesquisar</button>
+</form>
+
+<!-- TABELA -->
+<div class="box_tabela">
+    <table class="tabela">
+        <thead>
+            <tr>
+                <th data-tipo="numero">ID</th>
+                <th data-tipo="texto">Nome da Entidade</th>
+                <th data-tipo="texto">Identificador / CNPJ</th>
+                <th data-tipo="numero">Usuários Vinculados</th>
+                <th data-tipo="numero">Itens em Catálogo</th>
+                <th data-tipo="texto">Status</th>
+                <th data-nosort>Ações</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for e in entidades %}
+            <tr>
+                <td>{{ e.id }}</td>
+                <td><strong>{{ e.nome }}</strong></td>
+                <td>{{ e.identificador or '-' }}</td>
+                <td>{{ e.total_usuarios }}</td>
+                <td>{{ e.total_suprimentos }}</td>
+                <td>
+                    {% if e.status %}
+                    <span class="status_ativo">Ativa</span>
+                    {% else %}
+                    <span class="status_inativo">Inativa</span>
+                    {% endif %}
+                </td>
+                <td>
+                    <a class="link_acao" href="{{ url_for('admin.entidades_editar', id=e.id) }}">Editar</a>
+                </td>
+            </tr>
+            {% else %}
+            <tr>
+                <td colspan="7">Nenhuma entidade cadastrada.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<!-- ORDENAÇÃO DA TABELA: clique no cabeçalho alterna crescente/decrescente -->
+<script>
+    const tabela = document.querySelector(".tabela");
+    const cabecalhos = tabela.querySelectorAll("th[data-tipo]");
+
+    cabecalhos.forEach(th => {
+        th.addEventListener("click", () => {
+            const crescente = !th.classList.contains("asc");
+
+            cabecalhos.forEach(c => c.classList.remove("asc", "desc"));
+            th.classList.add(crescente ? "asc" : "desc");
+
+            const tbody = tabela.tBodies[0];
+            const linhas = Array.from(tbody.rows);
+            const coluna = th.cellIndex;
+            const numerico = th.dataset.tipo === "numero";
+
+            linhas.sort((a, b) => {
+                const x = a.cells[coluna].textContent.trim();
+                const y = b.cells[coluna].textContent.trim();
+                const r = numerico
+                    ? parseFloat(x) - parseFloat(y)
+                    : x.localeCompare(y, "pt-BR", { sensitivity: "base", numeric: true });
+                return crescente ? r : -r;
+            });
+
+            linhas.forEach(l => tbody.appendChild(l));
+        });
+    });
+</script>
+{% endblock %}
+

@@ -10,6 +10,10 @@ venv/
 
 # Configurações locais e segredos
 .env
+plugin_glpi/
+
+# Scratch de testes locais
+scratch_*.py
 
 # IDEs
 .vscode/

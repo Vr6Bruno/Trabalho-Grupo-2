@@ -1,0 +1,106 @@
+{% extends "base.html" %}
+
+{% block title %}Estok - {{ 'Editar Usuário' if editando else 'Novo Usuário' }}{% endblock %}
+
+{% block nav_usuarios_active %}ativo{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/admin.css') }}">
+{% endblock %}
+
+{% block content %}
+<div class="topo_pagina">
+    <div>
+        <h2>{{ 'Editar Usuário' if editando else 'Novo Usuário' }}</h2>
+        <p>Preencha o login de acesso, dados e permissões do usuário.</p>
+    </div>
+</div>
+
+{% if erros %}
+<ul class="erros">
+    {% for e in erros %}
+    <li>{{ e }}</li>
+    {% endfor %}
+</ul>
+{% endif %}
+
+<form method="post">
+    {% set u = usuario_editado if usuario_editado is defined else usuario %}
+    <div class="secao_admin">
+        <div class="campos_admin">
+            <label class="campo_admin">
+                <span>Login (Nome de usuário) <span class="obrigatorio">*</span></span>
+                <input type="text" name="login" value="{{ u.login or '' }}" placeholder="Ex: joao.silva, admin, gerente" required autofocus>
+                <small>Identificador único usado para entrar no sistema</small>
+            </label>
+
+            <label class="campo_admin">
+                <span>Nome Completo <span class="obrigatorio">*</span></span>
+                <input type="text" name="nome" value="{{ u.nome or '' }}" placeholder="Ex: João da Silva" required>
+            </label>
+
+            <label class="campo_admin">
+                <span>Senha de Acesso {% if not editando %}<span class="obrigatorio">*</span>{% endif %}</span>
+                <input type="password" name="senha" placeholder="{% if editando %}Deixe em branco para manter a atual{% else %}Mínimo 4 caracteres{% endif %}" {% if not editando %}required{% endif %}>
+                <small>{% if editando %}Preencha somente se desejar alterar a senha{% else %}Senha para o usuário logar no sistema{% endif %}</small>
+            </label>
+
+            <label class="campo_admin">
+                <span>E-mail (Opcional)</span>
+                <input type="email" name="email" value="{{ u.email or '' }}" placeholder="joao.silva@empresa.com">
+                <small>Contato do usuário para notificações e avisos</small>
+            </label>
+
+            <div class="campo_admin largo">
+                <span>Perfis de Acesso Associados <span class="obrigatorio">*</span></span>
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 10px; margin-top: 6px;">
+                    {% for p in perfis %}
+                    <label style="display: flex; align-items: flex-start; gap: 8px; background: #fff; border: 1px solid #ddd; padding: 10px; border-radius: 4px; cursor: pointer;">
+                        <input type="checkbox" name="perfil_ids" value="{{ p.id }}" {{ 'checked' if (u.perfil_ids and p.id in u.perfil_ids) or u.perfil_id == p.id }}>
+                        <div>
+                            <strong>{{ p.nome }}</strong>
+                            <small style="display: block; color: #666; font-size: 0.75rem;">{{ p.descricao }}</small>
+                        </div>
+                    </label>
+                    {% endfor %}
+                </div>
+                <small style="color: #666; margin-top: 4px; display: block;">O usuário poderá alternar entre seus perfis ativos diretamente no cabeçalho durante a sessão.</small>
+            </div>
+
+
+            {% if is_super_admin %}
+            <label class="campo_admin" id="grupo_entidade">
+                <span>Entidade Vinculada</span>
+                <select name="entidade_id" id="select_entidade">
+                    <option value="">Acesso Global (Apenas para Super-Admin)</option>
+                    {% for e in entidades %}
+                    <option value="{{ e.id }}" {{ 'selected' if u.entidade_id == e.id }}>{{ e.nome }}</option>
+                    {% endfor %}
+                </select>
+                <small>Obriga o usuário a operar estritamente dentro desta entidade</small>
+            </label>
+            {% else %}
+            <label class="campo_admin">
+                <span>Entidade Vinculada</span>
+                <input type="text" value="{{ usuario_logado.entidade_nome }}" disabled style="background: #f0f0f0; cursor: not-allowed;">
+                <small>O usuário será automaticamente vinculado à sua entidade ({{ usuario_logado.entidade_nome }}).</small>
+            </label>
+            {% endif %}
+
+            <label class="campo_admin">
+                <span>Status da Conta</span>
+                <select name="status">
+                    <option value="1" {{ 'selected' if u.status == 1 }}>Ativo</option>
+                    <option value="0" {{ 'selected' if u.status == 0 }}>Inativo (Bloqueado)</option>
+                </select>
+                <small>Usuários inativos não conseguem realizar login</small>
+            </label>
+        </div>
+    </div>
+
+    <div class="acoes_admin">
+        <a class="botao botao_destaque" href="{{ url_for('admin.usuarios_lista') }}">Cancelar</a>
+        <button type="submit" class="botao botao_primario">Salvar Usuário</button>
+    </div>
+</form>
+{% endblock %}

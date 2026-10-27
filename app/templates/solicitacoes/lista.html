@@ -1,0 +1,173 @@
+{% extends "base.html" %}
+
+{% block title %}Estok - Solicitações de Recursos{% endblock %}
+
+{% block nav_solicitacoes_active %}ativo{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/suprimentos.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/solicitacoes.css') }}">
+{% endblock %}
+
+{% block content %}
+<div class="topo_pagina">
+    <div>
+        <h2>Solicitações de Recursos</h2>
+        <p>Acompanhe os pedidos de suprimentos feitos pelos setores até a entrega final.</p>
+    </div>
+    <div style="display: flex; gap: 10px;">
+        {% if pode_operar %}
+        <a class="botao botao_destaque" href="{{ url_for('solicitacoes.compilado') }}">📦 Compilado Operacional</a>
+        {% endif %}
+        <a class="botao botao_primario" href="{{ url_for('solicitacoes.nova') }}">+ Nova Solicitação</a>
+    </div>
+</div>
+
+<!-- CARDS DE RESUMO -->
+<section class="resumo_solicitacoes">
+    <div class="card_solicitacao_stat azul">
+        <strong>{{ resumo.solicitadas }}</strong>
+        <span>Aguardando Validação</span>
+    </div>
+    <div class="card_solicitacao_stat verde">
+        <strong>{{ resumo.aprovadas }}</strong>
+        <span>Aprovadas (P/ Separar)</span>
+    </div>
+    <div class="card_solicitacao_stat roxo">
+        <strong>{{ resumo.separadas }}</strong>
+        <span>Separadas (P/ Entregar)</span>
+    </div>
+    <div class="card_solicitacao_stat teal">
+        <strong>{{ resumo.entregues }}</strong>
+        <span>Entregues (Concluídas)</span>
+    </div>
+    <div class="card_solicitacao_stat cinza">
+        <strong>{{ resumo.canceladas }}</strong>
+        <span>Canceladas / Rejeitadas</span>
+    </div>
+</section>
+
+<!-- FILTROS -->
+<form class="filtros" method="get" action="{{ url_for('solicitacoes.lista') }}">
+    <label>ID ou Solicitante
+        <input type="text" name="busca" value="{{ filtros.busca }}" placeholder="Buscar por ID ou nome...">
+    </label>
+
+    {% if is_admin %}
+    <label>Entidade
+        <select name="entidade_id">
+            <option value="">Todas as Entidades</option>
+            {% for ent in entidades_filtro %}
+            <option value="{{ ent.id }}" {{ 'selected' if filtros.entidade_id == (ent.id|string) }}>{{ ent.nome }}</option>
+            {% endfor %}
+        </select>
+    </label>
+    {% endif %}
+
+    <label>Status
+        <select name="status">
+            <option value="" {{ 'selected' if filtros.status == '' }}>Todos os status</option>
+            <option value="solicitada" {{ 'selected' if filtros.status == 'solicitada' }}>Solicitada</option>
+            <option value="aprovada" {{ 'selected' if filtros.status == 'aprovada' }}>Aprovada</option>
+            <option value="separada" {{ 'selected' if filtros.status == 'separada' }}>Separada</option>
+            <option value="entregue" {{ 'selected' if filtros.status == 'entregue' }}>Entregue</option>
+            <option value="rejeitada" {{ 'selected' if filtros.status == 'rejeitada' }}>Rejeitada</option>
+            <option value="cancelada" {{ 'selected' if filtros.status == 'cancelada' }}>Cancelada</option>
+        </select>
+    </label>
+
+    <button type="submit" class="botao botao_destaque">Filtrar</button>
+</form>
+
+<!-- TABELA DE SOLICITAÇÕES -->
+<div class="box_tabela">
+    <table class="tabela">
+        <thead>
+            <tr>
+                <th data-tipo="numero">ID</th>
+                {% if is_admin %}
+                <th data-tipo="texto">Entidade</th>
+                {% endif %}
+                <th data-tipo="texto">Solicitante</th>
+                <th data-tipo="texto">Data da Solicitação</th>
+                <th data-tipo="numero">Itens</th>
+                <th data-tipo="numero">Qtd Total</th>
+                <th data-tipo="texto">Status</th>
+                <th data-nosort>Ações</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for s in solicitacoes %}
+            <tr>
+                <td><strong>#{{ s.id }}</strong></td>
+                {% if is_admin %}
+                <td><small style="color: #666; font-weight: bold;">{{ s.entidade_nome }}</small></td>
+                {% endif %}
+                <td>
+                    <strong>{{ s.solicitante_nome }}</strong>
+                    <br><small style="color: #666;">@{{ s.solicitante_login }}</small>
+                </td>
+                <td>{{ s.criado_em.strftime('%d/%m/%Y %H:%M') if s.criado_em else '-' }}</td>
+                <td>{{ s.total_itens }} tipo(s)</td>
+                <td><strong>{{ s.total_pecas }}</strong> un</td>
+                <td>
+                    {% if s.status == 'solicitada' %}
+                    <span class="badge badge_solicitada">Solicitada</span>
+                    {% elif s.status == 'aprovada' %}
+                    <span class="badge badge_aprovada">Aprovada</span>
+                    {% elif s.status == 'separada' %}
+                    <span class="badge badge_separada">Separada</span>
+                    {% elif s.status == 'entregue' %}
+                    <span class="badge badge_entregue">Entregue</span>
+                    {% elif s.status == 'rejeitada' %}
+                    <span class="badge badge_rejeitada">Rejeitada</span>
+                    {% elif s.status == 'cancelada' %}
+                    <span class="badge badge_cancelada">Cancelada</span>
+                    {% else %}
+                    <span class="badge badge_cinza">{{ s.status }}</span>
+                    {% endif %}
+                </td>
+                <td>
+                    <a class="link_acao" href="{{ url_for('solicitacoes.detalhe', id=s.id) }}">Ver Detalhes</a>
+                </td>
+            </tr>
+            {% else %}
+            <tr>
+                <td colspan="{{ 8 if is_admin else 7 }}">Nenhuma solicitação encontrada.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    const tabela = document.querySelector(".tabela");
+    const cabecalhos = tabela.querySelectorAll("th[data-tipo]");
+
+    cabecalhos.forEach(th => {
+        th.addEventListener("click", () => {
+            const crescente = !th.classList.contains("asc");
+            cabecalhos.forEach(c => c.classList.remove("asc", "desc"));
+            th.classList.add(crescente ? "asc" : "desc");
+
+            const tbody = tabela.tBodies[0];
+            const linhas = Array.from(tbody.rows);
+            const coluna = th.cellIndex;
+            const numerico = th.dataset.tipo === "numero";
+
+            linhas.sort((a, b) => {
+                const x = a.cells[coluna].textContent.trim().replace("#", "");
+                const y = b.cells[coluna].textContent.trim().replace("#", "");
+                const r = numerico
+                    ? parseFloat(x) - parseFloat(y)
+                    : x.localeCompare(y, "pt-BR", { sensitivity: "base", numeric: true });
+                return crescente ? r : -r;
+            });
+
+            linhas.forEach(l => tbody.appendChild(l));
+        });
+    });
+</script>
+{% endblock %}

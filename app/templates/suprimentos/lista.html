@@ -2,6 +2,8 @@
 
 {% block title %}Estok - Suprimentos{% endblock %}
 
+{% block nav_suprimentos_active %}ativo{% endblock %}
+
 {% block extra_css %}
 <link rel="stylesheet" href="{{ url_for('static', filename='css/suprimentos.css') }}">
 {% endblock %}
@@ -12,7 +14,9 @@
         <h2>Catálogo de Suprimentos</h2>
         <p>Gerencie o estoque e os itens disponíveis para chamados.</p>
     </div>
+    {% if pode_editar %}
     <a class="botao botao_destaque" href="{{ url_for('suprimentos.novo') }}">+ Novo suprimento</a>
+    {% endif %}
 </div>
 
 <!-- CARDS DE RESUMO -->
@@ -38,8 +42,19 @@
 <!-- FILTROS -->
 <form class="filtros" method="get" action="{{ url_for('suprimentos.lista') }}">
     <label>Nome ou código
-        <input type="text" name="busca" value="{{ filtros.busca }}">
+        <input type="text" name="busca" value="{{ filtros.busca }}" placeholder="Buscar por nome ou código...">
     </label>
+
+    {% if is_admin %}
+    <label>Entidade
+        <select name="entidade_id">
+            <option value="">Todas as Entidades</option>
+            {% for ent in entidades_filtro %}
+            <option value="{{ ent.id }}" {{ 'selected' if filtros.entidade_id == (ent.id|string) }}>{{ ent.nome }}</option>
+            {% endfor %}
+        </select>
+    </label>
+    {% endif %}
 
     <label>Status
         <select name="status">
@@ -61,18 +76,33 @@
     <table class="tabela">
         <thead>
             <tr>
+                {% if is_admin %}
+                <th data-tipo="texto">Entidade</th>
+                {% endif %}
                 <th data-tipo="texto">Suprimento</th>
                 <th data-tipo="texto">Código interno</th>
                 <th data-tipo="texto">Unid.</th>
                 <th data-tipo="numero">Mín.</th>
                 <th data-tipo="numero">Estoque</th>
                 <th data-tipo="texto">Status</th>
+                {% if pode_editar %}
+                <th data-nosort>Ações</th>
+                {% endif %}
             </tr>
         </thead>
         <tbody>
             {% for s in suprimentos %}
             <tr>
-                <td><a href="{{ url_for('suprimentos.editar', id=s.id) }}">{{ s.nome }}</a></td>
+                {% if is_admin %}
+                <td><small style="color: #666; font-weight: bold;">{{ s.entidade_nome }}</small></td>
+                {% endif %}
+                <td>
+                    {% if pode_editar %}
+                    <a href="{{ url_for('suprimentos.editar', id=s.id) }}"><strong>{{ s.nome }}</strong></a>
+                    {% else %}
+                    <strong>{{ s.nome }}</strong>
+                    {% endif %}
+                </td>
                 <td>{{ s.codigo_interno or '-' }}</td>
                 <td>{{ s.unidade_medida or '-' }}</td>
                 <td>{{ s.estoque_minimo }}</td>
@@ -86,14 +116,23 @@
                     <span class="status status_inativo">Inativo</span>
                     {% endif %}
                 </td>
+                {% if pode_editar %}
+                <td style="white-space: nowrap;">
+                    <a class="link_acao" href="{{ url_for('suprimentos.editar', id=s.id) }}">Editar</a>
+                    <form action="{{ url_for('suprimentos.excluir', id=s.id) }}" method="post" style="display: inline-block; margin-left: 8px;" onsubmit="return confirm('Tem certeza que deseja excluir o suprimento {{ s.nome }}?');">
+                        <button type="submit" class="btn_link_perigo" title="Excluir suprimento">Excluir</button>
+                    </form>
+                </td>
+                {% endif %}
             </tr>
             {% else %}
             <tr>
-                <td colspan="6">Nenhum suprimento encontrado.</td>
+                <td colspan="{{ (8 if is_admin else 7) if pode_editar else (7 if is_admin else 6) }}">Nenhum suprimento encontrado.</td>
             </tr>
             {% endfor %}
         </tbody>
     </table>
+
 </div>
 {% endblock %}
 

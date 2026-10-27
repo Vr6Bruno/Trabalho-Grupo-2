@@ -1,0 +1,218 @@
+{% extends "base.html" %}
+
+{% block title %}Estok - Painel de Estoque{% endblock %}
+
+{% block nav_estoque_active %}ativo{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/suprimentos.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/estoque.css') }}">
+{% endblock %}
+
+{% block content %}
+<div class="topo_pagina">
+    <div>
+        <h2>Painel de Estoque</h2>
+        <p>Acompanhe os saldos disponíveis, estoque de segurança e movimentações em tempo real.</p>
+    </div>
+    <div style="display: flex; gap: 10px;">
+        <a class="botao botao_destaque" href="{{ url_for('estoque.consolidado') }}">📊 Relatório Consolidado</a>
+        <a class="botao botao_destaque" href="{{ url_for('estoque.historico') }}">🕒 Histórico de Movimentações</a>
+    </div>
+</div>
+
+
+<!-- CARDS DE RESUMO DE ESTOQUE -->
+<section class="resumo_estoque">
+    <div class="card_estoque azul">
+        <strong>{{ resumo.total }}</strong>
+        <span>Total de Suprimentos</span>
+    </div>
+    <div class="card_estoque verde">
+        <strong>{{ resumo.normais }}</strong>
+        <span>Estoque Normal</span>
+    </div>
+    <div class="card_estoque amarelo">
+        <strong>{{ resumo.criticos }}</strong>
+        <span>Estoque Crítico (Abaixo do Mínimo)</span>
+    </div>
+    <div class="card_estoque vermelho">
+        <strong>{{ resumo.zerados }}</strong>
+        <span>Estoque Zerado</span>
+    </div>
+</section>
+
+<!-- FILTROS -->
+<form class="filtros" method="get" action="{{ url_for('estoque.painel') }}">
+    <label>Nome ou código
+        <input type="text" name="busca" value="{{ filtros.busca }}" placeholder="Buscar suprimento...">
+    </label>
+
+    {% if is_admin %}
+    <label>Entidade
+        <select name="entidade_id">
+            <option value="">Todas as Entidades</option>
+            {% for ent in entidades_filtro %}
+            <option value="{{ ent.id }}" {{ 'selected' if filtros.entidade_id == (ent.id|string) }}>{{ ent.nome }}</option>
+            {% endfor %}
+        </select>
+    </label>
+    {% endif %}
+
+    <label>Situação do Saldo
+        <select name="situacao">
+            <option value="" {{ 'selected' if filtros.situacao == '' }}>Todas as situações</option>
+            <option value="critico" {{ 'selected' if filtros.situacao == 'critico' }}>⚠️ Crítico</option>
+            <option value="zerado" {{ 'selected' if filtros.situacao == 'zerado' }}>⛔ Zerado</option>
+            <option value="normal" {{ 'selected' if filtros.situacao == 'normal' }}>✅ Normal</option>
+        </select>
+    </label>
+
+    <button type="submit" class="botao botao_destaque">Filtrar</button>
+</form>
+
+<!-- TABELA DE SALDOS ATUAIS -->
+<div class="box_tabela" style="margin-bottom: 40px;">
+    <h3 style="margin: 0 0 15px; font-size: 1.15rem; color: #333;">Saldos Disponíveis em Estoque</h3>
+    <table class="tabela">
+        <thead>
+            <tr>
+                {% if is_admin %}
+                <th data-tipo="texto">Entidade</th>
+                {% endif %}
+                <th data-tipo="texto">Suprimento</th>
+                <th data-tipo="texto">Código</th>
+                <th data-tipo="texto">Unidade</th>
+                <th data-tipo="numero">Estoque Mínimo</th>
+                <th data-tipo="numero">Estoque Atual</th>
+                <th data-tipo="texto">Situação</th>
+                <th data-nosort>Ações</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for s in saldos %}
+            <tr>
+                {% if is_admin %}
+                <td><small style="color: #666; font-weight: bold;">{{ s.entidade_nome }}</small></td>
+                {% endif %}
+                <td><strong>{{ s.nome }}</strong></td>
+                <td>{{ s.codigo_interno or '-' }}</td>
+                <td>{{ s.unidade_medida or '-' }}</td>
+                <td>{{ s.estoque_minimo }}</td>
+                <td>
+                    <strong style="font-size: 1.05rem;">{{ s.estoque_atual }}</strong>
+                </td>
+                <td>
+                    {% if s.situacao_estoque == 'zerado' %}
+                    <span class="saldo_tag saldo_zerado">⛔ Zerado</span>
+                    {% elif s.situacao_estoque == 'critico' %}
+                    <span class="saldo_tag saldo_critico">⚠️ Crítico</span>
+                    {% else %}
+                    <span class="saldo_tag saldo_normal">✅ Normal</span>
+                    {% endif %}
+                </td>
+                <td style="white-space: nowrap;">
+                    <a class="link_acao" href="{{ url_for('estoque.historico', suprimento_id=s.id) }}">Histórico</a>
+                </td>
+
+            </tr>
+            {% else %}
+            <tr>
+                <td colspan="{{ 8 if is_admin else 7 }}">Nenhum suprimento encontrado no estoque.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<!-- ÚLTIMAS MOVIMENTAÇÕES DE ESTOQUE -->
+<div class="box_tabela">
+    <h3 style="margin: 0 0 15px; font-size: 1.15rem; color: #333;">Últimas Movimentações Registradas</h3>
+    <table class="tabela">
+        <thead>
+            <tr>
+                <th>Data/Hora</th>
+                {% if is_admin %}<th>Entidade</th>{% endif %}
+                <th>Suprimento</th>
+                <th>Tipo</th>
+                <th>Qtd</th>
+                <th>Antes</th>
+                <th>→</th>
+                <th>Depois</th>
+                <th>Responsável</th>
+                <th>Observação / Referência</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for m in movimentacoes %}
+            <tr>
+                <td><small style="color: #666;">{{ m.criado_em.strftime('%d/%m/%Y %H:%M') if m.criado_em else '-' }}</small></td>
+                {% if is_admin %}<td><small>{{ m.entidade_nome }}</small></td>{% endif %}
+                <td><strong>{{ m.suprimento_nome }}</strong></td>
+                <td>
+                    {% if m.tipo == 'entrada' %}
+                    <span class="tipo_mov_badge tipo_entrada">🟢 Entrada</span>
+                    {% elif m.tipo == 'saida' %}
+                    <span class="tipo_mov_badge tipo_saida">🔴 Saída</span>
+                    {% else %}
+                    <span class="tipo_mov_badge tipo_ajuste">🟡 Ajuste</span>
+                    {% endif %}
+                </td>
+                <td><strong>{{ m.quantidade }}</strong></td>
+                <td>{{ m.quantidade_anterior }}</td>
+                <td>→</td>
+                <td>
+                    <strong style="color: {{ '#2e7d32' if m.quantidade_posterior > m.quantidade_anterior else '#c62828' }};">
+                        {{ m.quantidade_posterior }}
+                    </strong>
+                </td>
+                <td><small>{{ m.usuario_nome }}</small></td>
+                <td>
+                    <small style="color: #555;">
+                        {{ m.observacao or '-' }}
+                        {% if m.solicitacao_id %}
+                        (Solicitação #{{ m.solicitacao_id }})
+                        {% endif %}
+                    </small>
+                </td>
+            </tr>
+            {% else %}
+            <tr>
+                <td colspan="{{ 10 if is_admin else 9 }}">Nenhuma movimentação registrada até o momento.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    const tabela = document.querySelector(".tabela");
+    const cabecalhos = tabela.querySelectorAll("th[data-tipo]");
+
+    cabecalhos.forEach(th => {
+        th.addEventListener("click", () => {
+            const crescente = !th.classList.contains("asc");
+            cabecalhos.forEach(c => c.classList.remove("asc", "desc"));
+            th.classList.add(crescente ? "asc" : "desc");
+
+            const tbody = tabela.tBodies[0];
+            const linhas = Array.from(tbody.rows);
+            const coluna = th.cellIndex;
+            const numerico = th.dataset.tipo === "numero";
+
+            linhas.sort((a, b) => {
+                const x = a.cells[coluna].textContent.trim();
+                const y = b.cells[coluna].textContent.trim();
+                const r = numerico
+                    ? parseFloat(x) - parseFloat(y)
+                    : x.localeCompare(y, "pt-BR", { sensitivity: "base", numeric: true });
+                return crescente ? r : -r;
+            });
+
+            linhas.forEach(l => tbody.appendChild(l));
+        });
+    });
+</script>
+{% endblock %}

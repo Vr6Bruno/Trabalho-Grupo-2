@@ -2,6 +2,8 @@
 
 {% block title %}Estok - {{ 'Editar Suprimento' if editando else 'Novo Suprimento' }}{% endblock %}
 
+{% block nav_suprimentos_active %}ativo{% endblock %}
+
 {% block extra_css %}
 <link rel="stylesheet" href="{{ url_for('static', filename='css/novo_suprimento.css') }}">
 {% endblock %}
@@ -24,9 +26,22 @@
         <section class="secao">
             <h3>Identificação</h3>
             <div class="campos">
+                {% if is_admin and not editando %}
+                <label class="campo largo">
+                    <span>Entidade Destino <span class="obrigatorio">*</span></span>
+                    <select name="entidade_id" required>
+                        <option value="">Selecione a Entidade para este suprimento</option>
+                        {% for ent in entidades %}
+                        <option value="{{ ent.id }}" {{ 'selected' if suprimento.entidade_id == ent.id }}>{{ ent.nome }}</option>
+                        {% endfor %}
+                    </select>
+                    <small>Como Super-Admin, defina a qual organização este suprimento pertence</small>
+                </label>
+                {% endif %}
+
                 <label class="campo">
                     <span>Nome <span class="obrigatorio">*</span></span>
-                    <input type="text" name="nome" value="{{ suprimento.nome or '' }}" required>
+                    <input type="text" name="nome" value="{{ suprimento.nome or '' }}" required autofocus>
                 </label>
 
                 <label class="campo">Código interno
@@ -41,7 +56,7 @@
                 </label>
 
                 <label class="campo">Unidade de medida
-                    <input type="text" name="unidade_medida" value="{{ suprimento.unidade_medida or '' }}">
+                    <input type="text" name="unidade_medida" value="{{ suprimento.unidade_medida or '' }}" placeholder="Ex: un, cx, kg, pct">
                 </label>
 
                 <label class="campo largo">Descrição
@@ -80,8 +95,16 @@
 
     <div class="acoes">
         <a class="botao botao_destaque" href="{{ url_for('suprimentos.lista') }}">Cancelar</a>
+        {% if editando %}
+        <button type="submit" form="form_excluir" class="botao botao_perigo" onclick="return confirm('Tem certeza que deseja excluir definitivamente este suprimento?');">Excluir</button>
+        {% endif %}
         <button type="submit" class="botao botao_primario">Salvar</button>
     </div>
 
 </form>
+
+{% if editando %}
+<form id="form_excluir" action="{{ url_for('suprimentos.excluir', id=suprimento.id) }}" method="post" style="display: none;"></form>
+{% endif %}
 {% endblock %}
+

@@ -1,0 +1,199 @@
+{% extends "base.html" %}
+
+{% block title %}Estok - Relatório Consolidado{% endblock %}
+
+{% block nav_estoque_active %}ativo{% endblock %}
+
+{% block extra_css %}
+<style>
+    @media print {
+        .navegador, .cabecalho, .barra_impressao, .link_sair {
+            display: none !important;
+        }
+        .bloco_conteudo {
+            margin: 0 !important;
+            padding: 0 !important;
+        }
+        .principal {
+            padding: 0 !important;
+        }
+        body {
+            background: white !important;
+            color: black !important;
+        }
+    }
+
+    .relatorio_box {
+        max-width: 900px;
+        margin: 0 auto;
+        background: #fff;
+        padding: 30px;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+    }
+
+    .barra_impressao {
+        display: flex;
+        justify-content: flex-end;
+        gap: 10px;
+        margin-bottom: 20px;
+    }
+
+    .secao_relatorio {
+        margin-top: 30px;
+    }
+
+    .titulo_secao {
+        padding: 8px 12px;
+        border-radius: 4px;
+        font-size: 1.05rem;
+        font-weight: bold;
+        margin-bottom: 12px;
+    }
+
+    .secao_separar {
+        background: #e8f5e9;
+        color: #1b5e20;
+        border-left: 5px solid #2e7d32;
+    }
+
+    .secao_comprar {
+        background: #fff3e0;
+        color: #bf360c;
+        border-left: 5px solid #e65100;
+    }
+
+    .tabela_relatorio {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 0.9rem;
+    }
+
+    .tabela_relatorio th {
+        background-color: #f7f7f7;
+        padding: 8px 10px;
+        text-align: left;
+        border-bottom: 2px solid #ddd;
+    }
+
+    .tabela_relatorio td {
+        padding: 8px 10px;
+        border-bottom: 1px solid #eee;
+    }
+
+    .tag_chamado {
+        background: #546e7a;
+        color: #fff;
+        padding: 2px 6px;
+        border-radius: 3px;
+        font-size: 0.75rem;
+        font-weight: bold;
+        text-decoration: none;
+        display: inline-block;
+        margin-right: 4px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="relatorio_box">
+    <div class="barra_impressao">
+        <button onclick="window.print()" class="botao botao_primario">🖨️ Imprimir / Salvar PDF</button>
+        <a href="{{ url_for('estoque.painel') }}" class="botao botao_destaque">Voltar</a>
+    </div>
+
+    <div style="border-bottom: 2px solid #001dbe; padding-bottom: 12px; margin-bottom: 20px;">
+        <h2 style="margin: 0; color: #001dbe;">Relatório Consolidado de Suprimentos</h2>
+        <div style="display: flex; justify-content: space-between; margin-top: 6px; font-size: 0.85rem; color: #666;">
+            <span><strong>Entidade:</strong> {{ entidade_nome }}</span>
+            <span><strong>Emitido em:</strong> {{ data_hora }}</span>
+        </div>
+    </div>
+
+    <!-- SEÇÃO 1: SEPARAR DO ESTOQUE -->
+    <div class="secao_relatorio">
+        <div class="titulo_secao secao_separar">
+            📦 1. Separar do Estoque (Itens aprovados com estoque disponível)
+        </div>
+        {% if separar_estoque %}
+        <table class="tabela_relatorio">
+            <thead>
+                <tr>
+                    <th>Suprimento</th>
+                    <th style="text-align: center;">Estoque Atual</th>
+                    <th style="text-align: center;">Pendente Total</th>
+                    <th style="text-align: center; font-weight: bold; color: #1b5e20;">Qtd a Separar</th>
+                    <th>Solicitações de Origem</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in separar_estoque %}
+                <tr>
+                    <td>
+                        <strong>{{ item.suprimento_nome }}</strong>
+                        {% if item.codigo_interno %}<small style="color: #666;">({{ item.codigo_interno }})</small>{% endif %}
+                        <small style="color: #888;">- {{ item.unidade_medida or 'un' }}</small>
+                    </td>
+                    <td style="text-align: center;">{{ item.estoque_atual }}</td>
+                    <td style="text-align: center;">{{ item.pendente }}</td>
+                    <td style="text-align: center; font-weight: bold; font-size: 1.05rem; color: #1b5e20;">
+                        {{ item.qtd_separar }}
+                    </td>
+                    <td>
+                        {% for sol_id in item.solicitacoes_ids.split(', ') %}
+                        <a href="{{ url_for('solicitacoes.detalhe', id=sol_id) }}" class="tag_chamado">#{{ sol_id }}</a>
+                        {% endfor %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% else %}
+        <p style="color: #777; font-style: italic; padding: 10px;">Nenhum item aprovado pendente de separação imediata.</p>
+        {% endif %}
+    </div>
+
+    <!-- SEÇÃO 2: NECESSÁRIO COMPRAR -->
+    <div class="secao_relatorio">
+        <div class="titulo_secao secao_comprar">
+            🛒 2. Necessário Comprar (Itens aprovados sem saldo suficiente em estoque)
+        </div>
+        {% if necessario_comprar %}
+        <table class="tabela_relatorio">
+            <thead>
+                <tr>
+                    <th>Suprimento</th>
+                    <th style="text-align: center;">Estoque Atual</th>
+                    <th style="text-align: center;">Pendente Total</th>
+                    <th style="text-align: center; font-weight: bold; color: #bf360c;">Qtd a Comprar</th>
+                    <th>Solicitações de Origem</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in necessario_comprar %}
+                <tr>
+                    <td>
+                        <strong>{{ item.suprimento_nome }}</strong>
+                        {% if item.codigo_interno %}<small style="color: #666;">({{ item.codigo_interno }})</small>{% endif %}
+                        <small style="color: #888;">- {{ item.unidade_medida or 'un' }}</small>
+                    </td>
+                    <td style="text-align: center; color: #b71c1c; font-weight: bold;">{{ item.estoque_atual }}</td>
+                    <td style="text-align: center;">{{ item.pendente }}</td>
+                    <td style="text-align: center; font-weight: bold; font-size: 1.05rem; color: #bf360c;">
+                        {{ item.qtd_comprar }}
+                    </td>
+                    <td>
+                        {% for sol_id in item.solicitacoes_ids.split(', ') %}
+                        <a href="{{ url_for('solicitacoes.detalhe', id=sol_id) }}" class="tag_chamado">#{{ sol_id }}</a>
+                        {% endfor %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% else %}
+        <p style="color: #777; font-style: italic; padding: 10px;">Nenhuma necessidade de compra pendente para as solicitações abertas.</p>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

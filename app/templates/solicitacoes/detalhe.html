@@ -1,0 +1,224 @@
+{% extends "base.html" %}
+
+{% block title %}Estok - Solicitação #{{ solicitacao.id }}{% endblock %}
+
+{% block nav_solicitacoes_active %}ativo{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/suprimentos.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/solicitacoes.css') }}">
+{% endblock %}
+
+{% block content %}
+<div class="topo_pagina">
+    <div style="display: flex; align-items: center; gap: 15px; flex-wrap: wrap;">
+        <h2 style="margin: 0;">Solicitação #{{ solicitacao.id }}</h2>
+        {% if solicitacao.status == 'solicitada' %}
+        <span class="badge badge_solicitada">Solicitada</span>
+        {% elif solicitacao.status == 'aprovada' %}
+        <span class="badge badge_aprovada">Aprovada</span>
+        {% elif solicitacao.status == 'separada' %}
+        <span class="badge badge_separada">Separada</span>
+        {% elif solicitacao.status == 'entregue' %}
+        <span class="badge badge_entregue">Entregue</span>
+        {% elif solicitacao.status == 'rejeitada' %}
+        <span class="badge badge_rejeitada">Rejeitada</span>
+        {% elif solicitacao.status == 'cancelada' %}
+        <span class="badge badge_cancelada">Cancelada</span>
+        {% else %}
+        <span class="badge badge_cinza">{{ solicitacao.status }}</span>
+        {% endif %}
+    </div>
+    <div style="display: flex; gap: 10px;">
+        <a class="botao botao_destaque" href="{{ url_for('solicitacoes.lista') }}">← Voltar à Lista</a>
+        {% if pode_separar %}
+        <a class="botao botao_primario" href="{{ url_for('solicitacoes.compilado') }}">📦 Compilado Operacional</a>
+        {% endif %}
+    </div>
+</div>
+
+<!-- INFORMAÇÕES DA SOLICITAÇÃO -->
+<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 15px; margin-bottom: 25px;">
+    <div class="card_solicitacao_stat">
+        <span style="font-size: 0.8rem; text-transform: uppercase; color: #888; font-weight: bold;">Solicitante</span>
+        <strong style="font-size: 1.15rem; margin-top: 4px;">{{ solicitacao.solicitante_nome }}</strong>
+        <small style="color: #666;">@{{ solicitacao.solicitante_login }}</small>
+    </div>
+    <div class="card_solicitacao_stat">
+        <span style="font-size: 0.8rem; text-transform: uppercase; color: #888; font-weight: bold;">Entidade</span>
+        <strong style="font-size: 1.15rem; margin-top: 4px;">{{ solicitacao.entidade_nome }}</strong>
+        <small style="color: #666;">Data: {{ solicitacao.criado_em.strftime('%d/%m/%Y %H:%M') if solicitacao.criado_em else '-' }}</small>
+    </div>
+    {% if solicitacao.validador_nome %}
+    <div class="card_solicitacao_stat">
+        <span style="font-size: 0.8rem; text-transform: uppercase; color: #888; font-weight: bold;">Validação</span>
+        <strong style="font-size: 1.15rem; margin-top: 4px;">{{ solicitacao.validador_nome }}</strong>
+        <small style="color: #666;">Em: {{ solicitacao.data_validacao.strftime('%d/%m/%Y %H:%M') if solicitacao.data_validacao else '-' }}</small>
+    </div>
+    {% endif %}
+    {% if solicitacao.responsavel_entrega_nome %}
+    <div class="card_solicitacao_stat">
+        <span style="font-size: 0.8rem; text-transform: uppercase; color: #888; font-weight: bold;">Entrega</span>
+        <strong style="font-size: 1.15rem; margin-top: 4px;">{{ solicitacao.responsavel_entrega_nome }}</strong>
+        <small style="color: #666;">Em: {{ solicitacao.data_entrega.strftime('%d/%m/%Y %H:%M') if solicitacao.data_entrega else '-' }}</small>
+    </div>
+    {% endif %}
+</div>
+
+{% if solicitacao.observacao %}
+<div style="background: #fdfdfd; border-left: 4px solid #001dbe; padding: 12px 16px; margin-bottom: 25px; border-radius: 2px;">
+    <strong style="font-size: 0.85rem; color: #555; text-transform: uppercase; display: block; margin-bottom: 4px;">Observação do Solicitante:</strong>
+    <p style="margin: 0; color: #222;">{{ solicitacao.observacao }}</p>
+</div>
+{% endif %}
+
+{% if solicitacao.justificativa_rejeicao %}
+<div style="background: #ffebee; border-left: 4px solid #c62828; padding: 12px 16px; margin-bottom: 25px; border-radius: 2px;">
+    <strong style="font-size: 0.85rem; color: #c62828; text-transform: uppercase; display: block; margin-bottom: 4px;">Justificativa de Rejeição:</strong>
+    <p style="margin: 0; color: #b71c1c;">{{ solicitacao.justificativa_rejeicao }}</p>
+</div>
+{% endif %}
+
+<!-- BARRA DE AÇÕES DO WORKFLOW -->
+{% if pode_validar or pode_entregar or pode_cancelar %}
+<div style="background: #fff; border: 1px solid #ddd; border-radius: 4px; padding: 16px 20px; margin-bottom: 25px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 15px;">
+    <div>
+        <strong style="font-size: 0.95rem; color: #333;">Ações Disponíveis para esta Solicitação:</strong>
+        <p style="margin: 2px 0 0; font-size: 0.85rem; color: #666;">Avance as etapas do fluxo de acordo com seu perfil de acesso.</p>
+    </div>
+    <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+        {% if pode_validar %}
+        <form action="{{ url_for('solicitacoes.aprovar', id=solicitacao.id) }}" method="post" style="display: inline;">
+            <button type="submit" class="botao botao_primario" style="background-color: #2e7d32; border-color: #2e7d32;" onclick="return confirm('Deseja aprovar esta solicitação para atendimento?');">
+                ✓ Aprovar Solicitação
+            </button>
+        </form>
+
+        <button type="button" class="botao botao_destaque" style="color: #c62828; border-color: #c62828;" onclick="abrirModalRejeicao()">
+            ✕ Rejeitar
+        </button>
+        {% endif %}
+
+        {% if pode_entregar %}
+        <form action="{{ url_for('solicitacoes.entregar', id=solicitacao.id) }}" method="post" style="display: inline;">
+            <button type="submit" class="botao botao_primario" style="background-color: #004d40; border-color: #004d40;" onclick="return confirm('Confirmar a entrega dos itens ao solicitante e concluir atendimento?');">
+                ✓ Concluir Entrega
+            </button>
+        </form>
+        {% endif %}
+
+        {% if pode_cancelar %}
+        <form action="{{ url_for('solicitacoes.cancelar', id=solicitacao.id) }}" method="post" style="display: inline;" onsubmit="return promptMotivoCancelamento(this);">
+            <input type="hidden" name="motivo" id="campo_motivo_cancelamento" value="">
+            <button type="submit" class="botao botao_destaque" style="color: #666;">
+                Cancelar Solicitação
+            </button>
+        </form>
+        {% endif %}
+    </div>
+</div>
+{% endif %}
+
+<!-- TABELA DE ITENS -->
+<div class="box_tabela" style="margin-bottom: 35px;">
+    <h3 style="margin: 0 0 15px; font-size: 1.15rem; color: #333;">Itens Solicitados</h3>
+    <table class="tabela">
+        <thead>
+            <tr>
+                <th>Suprimento</th>
+                <th>Código</th>
+                <th>Unidade</th>
+                <th style="text-align: center;">Solicitado</th>
+                <th style="text-align: center;">Já Atendido</th>
+                <th style="text-align: center;">Pendente</th>
+                <th style="text-align: center;">Estoque Atual</th>
+                <th style="text-align: center;">Status do Item</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for it in itens %}
+            <tr>
+                <td><strong>{{ it.suprimento_nome }}</strong></td>
+                <td>{{ it.codigo_interno or '-' }}</td>
+                <td>{{ it.unidade_medida or 'un' }}</td>
+                <td style="text-align: center; font-weight: bold;">{{ it.quantidade_solicitada }}</td>
+                <td style="text-align: center; color: #2e7d32; font-weight: bold;">{{ it.quantidade_atendida }}</td>
+                <td style="text-align: center; color: {{ '#c62828' if it.pendente > 0 else '#666' }}; font-weight: bold;">
+                    {{ it.pendente }}
+                </td>
+                <td style="text-align: center;">
+                    <span class="badge {{ 'badge_verde' if it.estoque_atual >= it.pendente else 'badge_vermelho' }}">
+                        {{ it.estoque_atual }}
+                    </span>
+                </td>
+                <td style="text-align: center;">
+                    {% if it.status == 'atendido' %}
+                    <span class="badge badge_verde">Atendido</span>
+                    {% elif it.status == 'separado' %}
+                    <span class="badge badge_roxo">Separado</span>
+                    {% elif it.status == 'aprovado' %}
+                    <span class="badge badge_azul">Aprovado</span>
+                    {% elif it.status == 'pendente' %}
+                    <span class="badge badge_amarelo">Pendente</span>
+                    {% else %}
+                    <span class="badge badge_cinza">{{ it.status }}</span>
+                    {% endif %}
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<!-- HISTÓRICO DE EVENTOS / AUDITORIA -->
+<div class="box_tabela" style="background: #fff; padding: 20px; border: 1px solid #ddd; border-radius: 4px;">
+    <h3 style="margin: 0 0 15px; font-size: 1.15rem; color: #333;">Histórico de Eventos da Solicitação</h3>
+    <div class="timeline">
+        {% for h in historico %}
+        <div class="timeline_item">
+            <div class="timeline_dot"></div>
+            <div class="timeline_content">
+                <strong>{{ h.descricao or 'Mudança de estado' }}</strong>
+                <div class="timeline_date">
+                    Por {{ h.usuario_nome }} em {{ h.criado_em.strftime('%d/%m/%Y às %H:%M') if h.criado_em else '-' }}
+                </div>
+            </div>
+        </div>
+        {% else %}
+        <p style="color: #666; font-style: italic;">Nenhum evento registrado.</p>
+        {% endfor %}
+    </div>
+</div>
+
+<!-- MODAL SIMPLES PARA REJEIÇÃO -->
+<dialog id="modal_rejeicao" style="border: 1px solid #ccc; border-radius: 6px; padding: 25px; max-width: 500px; width: 90%; box-shadow: 0 4px 12px rgba(0,0,0,0.15);">
+    <h3 style="margin-top: 0; color: #c62828;">Rejeitar Solicitação #{{ solicitacao.id }}</h3>
+    <form action="{{ url_for('solicitacoes.rejeitar', id=solicitacao.id) }}" method="post">
+        <label style="display: block; margin-bottom: 15px;">
+            <span style="font-weight: bold; font-size: 0.9rem; display: block; margin-bottom: 5px;">Justificativa da Rejeição <span style="color: red;">*</span></span>
+            <textarea name="justificativa" rows="4" required placeholder="Informe o motivo da recusa desta solicitação..." style="width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 3px; font-family: inherit;"></textarea>
+        </label>
+        <div style="display: flex; justify-content: flex-end; gap: 10px;">
+            <button type="button" class="botao botao_destaque" onclick="document.getElementById('modal_rejeicao').close()">Cancelar</button>
+            <button type="submit" class="botao botao_perigo">Confirmar Rejeição</button>
+        </div>
+    </form>
+</dialog>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    function abrirModalRejeicao() {
+        document.getElementById("modal_rejeicao").showModal();
+    }
+
+    function promptMotivoCancelamento(form) {
+        const motivo = prompt("Por gentileza, informe o motivo do cancelamento (opcional):");
+        if (motivo === null) {
+            return false;
+        }
+        form.querySelector("#campo_motivo_cancelamento").value = motivo;
+        return true;
+    }
+</script>
+{% endblock %}

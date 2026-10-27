@@ -1,0 +1,153 @@
+{% extends "base.html" %}
+
+{% block title %}Estok - Pedidos de Compra{% endblock %}
+
+{% block nav_pedidos_active %}ativo{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/suprimentos.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/pedidos.css') }}">
+{% endblock %}
+
+{% block content %}
+<div class="topo_pagina">
+    <div>
+        <h2>Pedidos de Compra</h2>
+        <p>Gerencie a cotação, compra e reposição física de suprimentos no estoque.</p>
+    </div>
+    <a class="botao botao_primario" href="{{ url_for('pedidos.novo') }}">+ Novo Pedido de Compra</a>
+</div>
+
+<!-- CARDS DE RESUMO -->
+<section class="resumo_pedidos">
+    <div class="card_pedido_stat azul">
+        <strong>{{ resumo.em_montagem }}</strong>
+        <span>Em Montagem</span>
+    </div>
+    <div class="card_pedido_stat amarelo">
+        <strong>{{ resumo.aguardando_cotacao }}</strong>
+        <span>Aguardando Cotação</span>
+    </div>
+    <div class="card_pedido_stat laranja">
+        <strong>{{ resumo.em_andamento }}</strong>
+        <span>Em Andamento / Recebendo</span>
+    </div>
+    <div class="card_pedido_stat verde">
+        <strong>{{ resumo.recebidos }}</strong>
+        <span>Recebidos (Concluídos)</span>
+    </div>
+</section>
+
+<!-- FILTROS -->
+<form class="filtros" method="get" action="{{ url_for('pedidos.lista') }}">
+    <label>ID ou Nome do Pedido
+        <input type="text" name="busca" value="{{ filtros.busca }}" placeholder="Buscar pedido...">
+    </label>
+
+    {% if is_admin %}
+    <label>Entidade
+        <select name="entidade_id">
+            <option value="">Todas as Entidades</option>
+            {% for ent in entidades_filtro %}
+            <option value="{{ ent.id }}" {{ 'selected' if filtros.entidade_id == (ent.id|string) }}>{{ ent.nome }}</option>
+            {% endfor %}
+        </select>
+    </label>
+    {% endif %}
+
+    <label>Status
+        <select name="status">
+            <option value="" {{ 'selected' if filtros.status == '' }}>Todos os status</option>
+            <option value="em_montagem" {{ 'selected' if filtros.status == 'em_montagem' }}>Em montagem</option>
+            <option value="aguardando_cotacao" {{ 'selected' if filtros.status == 'aguardando_cotacao' }}>Aguardando cotação</option>
+            <option value="pedido_realizado" {{ 'selected' if filtros.status == 'pedido_realizado' }}>Pedido realizado</option>
+            <option value="parcialmente_recebido" {{ 'selected' if filtros.status == 'parcialmente_recebido' }}>Parcialmente recebido</option>
+            <option value="recebido" {{ 'selected' if filtros.status == 'recebido' }}>Recebido</option>
+            <option value="cancelado" {{ 'selected' if filtros.status == 'cancelado' }}>Cancelado</option>
+        </select>
+    </label>
+
+    <button type="submit" class="botao botao_destaque">Filtrar</button>
+</form>
+
+<!-- TABELA DE PEDIDOS DE COMPRA -->
+<div class="box_tabela">
+    <table class="tabela">
+        <thead>
+            <tr>
+                <th data-tipo="numero">ID</th>
+                {% if is_admin %}
+                <th data-tipo="texto">Entidade</th>
+                {% endif %}
+                <th data-tipo="texto">Nome do Pedido</th>
+                <th data-tipo="texto">Responsável</th>
+                <th data-tipo="texto">Criado em</th>
+                <th data-tipo="numero">Itens</th>
+                <th data-tipo="texto">Recebimento</th>
+                <th data-tipo="texto">Status</th>
+                <th data-nosort>Ações</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for p in pedidos %}
+            <tr>
+                <td><strong>#{{ p.id }}</strong></td>
+                {% if is_admin %}
+                <td><small style="color: #666; font-weight: bold;">{{ p.entidade_nome }}</small></td>
+                {% endif %}
+                <td><strong>{{ p.nome }}</strong></td>
+                <td><small>{{ p.usuario_nome }}</small></td>
+                <td>{{ p.criado_em.strftime('%d/%m/%Y %H:%M') if p.criado_em else '-' }}</td>
+                <td>{{ p.total_itens }} suprimento(s)</td>
+                <td>
+                    <strong>{{ p.total_recebido }}</strong> / {{ p.total_necessario }} un
+                </td>
+                <td>
+                    <span class="status_pedido_badge status_{{ p.status }}">
+                        {{ p.status|replace('_', ' ')|title }}
+                    </span>
+                </td>
+                <td>
+                    <a class="link_acao" href="{{ url_for('pedidos.detalhe', id=p.id) }}">Abrir Pedido</a>
+                </td>
+            </tr>
+            {% else %}
+            <tr>
+                <td colspan="{{ 9 if is_admin else 8 }}">Nenhum pedido de compra encontrado.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    const tabela = document.querySelector(".tabela");
+    const cabecalhos = tabela.querySelectorAll("th[data-tipo]");
+
+    cabecalhos.forEach(th => {
+        th.addEventListener("click", () => {
+            const crescente = !th.classList.contains("asc");
+            cabecalhos.forEach(c => c.classList.remove("asc", "desc"));
+            th.classList.add(crescente ? "asc" : "desc");
+
+            const tbody = tabela.tBodies[0];
+            const linhas = Array.from(tbody.rows);
+            const coluna = th.cellIndex;
+            const numerico = th.dataset.tipo === "numero";
+
+            linhas.sort((a, b) => {
+                const x = a.cells[coluna].textContent.trim().replace("#", "");
+                const y = b.cells[coluna].textContent.trim().replace("#", "");
+                const r = numerico
+                    ? parseFloat(x) - parseFloat(y)
+                    : x.localeCompare(y, "pt-BR", { sensitivity: "base", numeric: true });
+                return crescente ? r : -r;
+            });
+
+            linhas.forEach(l => tbody.appendChild(l));
+        });
+    });
+</script>
+{% endblock %}

@@ -1,0 +1,57 @@
+{% extends "base.html" %}
+
+{% block title %}Estok - {{ 'Editar Entidade' if editando else 'Nova Entidade' }}{% endblock %}
+
+{% block nav_entidades_active %}ativo{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/admin.css') }}">
+{% endblock %}
+
+{% block content %}
+<div class="topo_pagina">
+    <div>
+        <h2>{{ 'Editar Entidade' if editando else 'Nova Entidade' }}</h2>
+        <p>Informe os dados da organização cliente para isolamento de dados.</p>
+    </div>
+</div>
+
+{% if erros %}
+<ul class="erros">
+    {% for e in erros %}
+    <li>{{ e }}</li>
+    {% endfor %}
+</ul>
+{% endif %}
+
+<form method="post">
+    <div class="secao_admin">
+        <div class="campos_admin">
+            <label class="campo_admin largo">
+                <span>Nome da Entidade / Empresa <span class="obrigatorio">*</span></span>
+                <input type="text" name="nome" value="{{ entidade.nome or '' }}" placeholder="Ex: Hospital Central / Empresa Alfa" required autofocus>
+            </label>
+
+            <label class="campo_admin">
+                <span>Identificador / CNPJ / Código</span>
+                <input type="text" name="identificador" value="{{ entidade.identificador or '' }}" placeholder="Ex: 00.000.000/0001-00 ou FILIAL-01">
+                <small>Código único ou CNPJ da organização</small>
+            </label>
+
+            <label class="campo_admin">
+                <span>Status da Entidade</span>
+                <select name="status">
+                    <option value="1" {{ 'selected' if entidade.status == 1 }}>Ativa</option>
+                    <option value="0" {{ 'selected' if entidade.status == 0 }}>Inativa (Bloqueia acesso)</option>
+                </select>
+                <small>Entidades inativas impedem o login de seus usuários</small>
+            </label>
+        </div>
+    </div>
+
+    <div class="acoes_admin">
+        <a class="botao botao_destaque" href="{{ url_for('admin.entidades_lista') }}">Cancelar</a>
+        <button type="submit" class="botao botao_primario">Salvar Entidade</button>
+    </div>
+</form>
+{% endblock %}

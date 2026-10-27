@@ -14,28 +14,281 @@
     <nav class="navegador">
         <h1 class="titulo">Estok</h1>
         <ul class="box_lista">
-            <li class="lista"><a class="botao" href="#">Solicitações</a></li>
-            <li class="lista"><a class="botao {% block nav_suprimentos_active %}ativo{% endblock %}" href="{{ url_for('suprimentos.lista') }}">Suprimentos</a></li>
-            <li class="lista"><a class="botao" href="#">Estoque</a></li>
-            <li class="lista"><a class="botao" href="#">Pedidos</a></li>
+            {# Solicitações: Visível para todos os perfis autenticados #}
+            <li class="lista"><a class="botao {% block nav_solicitacoes_active %}{% endblock %}" href="{{ url_for('solicitacoes.lista') }}">Solicitações</a></li>
+
+            {% if usuario_logado %}
+                {% set p_atual = usuario_logado.perfil %}
+
+                {# Suprimentos e Estoque: Gestor, Gerente, Administrador e Super-Admin (Oculto para Solicitante) #}
+                {% if p_atual in ('GESTOR', 'ESTOQUISTA', 'GERENTE', 'ADMIN', 'SUPER_ADMIN') %}
+                <li class="lista"><a class="botao {% block nav_suprimentos_active %}{% endblock %}" href="{{ url_for('suprimentos.lista') }}">Suprimentos</a></li>
+                <li class="lista"><a class="botao {% block nav_estoque_active %}{% endblock %}" href="{{ url_for('estoque.painel') }}">Estoque</a></li>
+                {% endif %}
+
+                {# Pedidos: Gerente, Administrador e Super-Admin (Oculto para Gestor e Solicitante) #}
+                {% if p_atual in ('GERENTE', 'ADMIN', 'SUPER_ADMIN') %}
+                <li class="lista"><a class="botao {% block nav_pedidos_active %}{% endblock %}" href="{{ url_for('pedidos.lista') }}">Pedidos</a></li>
+                {% endif %}
+
+                {# Seção ADMINISTRAÇÃO: Administrador da Entidade e Super-Admin #}
+                {% if p_atual in ('ADMIN', 'SUPER_ADMIN') %}
+                <li class="lista_divisor"><span>ADMINISTRAÇÃO</span></li>
+                {% if p_atual == 'SUPER_ADMIN' %}
+                <li class="lista"><a class="botao {% block nav_entidades_active %}{% endblock %}" href="{{ url_for('admin.entidades_lista') }}">Entidades</a></li>
+                {% endif %}
+                <li class="lista"><a class="botao {% block nav_usuarios_active %}{% endblock %}" href="{{ url_for('admin.usuarios_lista') }}">Usuários</a></li>
+                {% endif %}
+            {% endif %}
         </ul>
     </nav>
 
     <div class="bloco_conteudo">
         <!-- CABEÇALHO -->
         <header class="cabecalho">
-            <div class="usuario">
-                <span id="usuario_nome">{{ usuario.nome }}</span>
-                <span><span id="usuario_entidade">{{ usuario.entidade }}</span> / <span id="usuario_perfil">{{ usuario.perfil }}</span></span>
+            <div class="cabecalho_esquerda">
+                <!-- Área reservada / limpa para títulos e navegação -->
             </div>
-            <div class="avatar"></div>
+
+            <!-- ÁREA DO USUÁRIO COM MENU DROPDOWN -->
+            <div class="usuario_dropdown_container" id="containerUsuarioDropdown">
+                <button type="button" class="usuario_trigger" id="btnUsuarioMenu" aria-expanded="false" title="Menu do Usuário">
+                    <div class="usuario_texto">
+                        <span class="usuario_nome"><strong>{{ usuario_logado.nome }}</strong></span>
+                        <span class="usuario_subtitulo">
+                            {{ usuario_logado.entidade_nome or 'Todas as Entidades' }} / {{ usuario_logado.perfil_nome or 'Super-Admin' }}
+                        </span>
+                    </div>
+                    <div class="avatar" title="{{ usuario_logado.nome }}">
+                        <span class="avatar_letra">{{ (usuario_logado.nome[0] if usuario_logado.nome else 'U')|upper }}</span>
+                    </div>
+                </button>
+
+                <!-- MENU PRINCIPAL DO USUÁRIO -->
+                <div class="menu_usuario_dropdown" id="menuUsuarioDropdown">
+                    <div class="menu_usuario_seta"></div>
+                    <div class="menu_usuario_header">
+                        {{ usuario_logado.nome|upper }}
+                    </div>
+
+                    <ul class="menu_usuario_lista">
+                        <!-- ITEM DE PERFIL -->
+                        <li class="menu_item_has_sub" id="itemMenuPerfil">
+                            <button type="button" class="menu_item_btn" id="btnMenuPerfil" {% if not (usuario_logado.perfis and usuario_logado.perfis|length > 1) %}disabled style="cursor: default;"{% endif %}>
+                                <span class="menu_item_info">
+                                    <span class="menu_icone">👤</span>
+                                    <span class="menu_rotulo">{{ usuario_logado.perfil_nome or 'Super-Admin' }}</span>
+                                </span>
+                                {% if usuario_logado.perfis and usuario_logado.perfis|length > 1 %}
+                                <span class="menu_chevron">&lsaquo;</span>
+                                {% endif %}
+                            </button>
+
+                            {% if usuario_logado.perfis and usuario_logado.perfis|length > 1 %}
+                            <!-- FLYOUT SUBMENU DE PERFIS (ABRE À ESQUERDA) -->
+                            <div class="flyout_perfis" id="flyoutPerfis">
+                                <div class="flyout_header">PERFIS</div>
+                                <div class="flyout_corpo">
+                                    {% for p in usuario_logado.perfis %}
+                                    {% set esta_ativo = (usuario_logado.perfil_id == p.id or usuario_logado.perfil == p.codigo) %}
+                                    <form action="{{ url_for('auth.trocar_perfil') }}" method="post" class="form_opcao_perfil">
+                                        <input type="hidden" name="perfil_id" value="{{ p.id }}">
+                                        <button type="submit" class="opcao_perfil_btn {{ 'ativo' if esta_ativo }}">
+                                            <span class="opcao_icone">👤</span>
+                                            <span class="opcao_nome">{{ p.nome }}</span>
+                                        </button>
+                                    </form>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                            {% endif %}
+                        </li>
+
+                        <!-- ITEM DE ENTIDADE -->
+                        <li class="menu_item_has_sub" id="itemMenuEntidade">
+                            <button type="button" class="menu_item_btn" id="btnMenuEntidade" {% if usuario_logado.perfil != 'SUPER_ADMIN' %}disabled style="cursor: default;"{% endif %}>
+                                <span class="menu_item_info">
+                                    <span class="menu_icone">🗂️</span>
+                                    <span class="menu_rotulo" title="{{ usuario_logado.entidade_nome }}">{{ usuario_logado.entidade_nome or 'Todas as Entidades' }}</span>
+                                </span>
+                                {% if usuario_logado.perfil == 'SUPER_ADMIN' %}
+                                <span class="menu_chevron">&lsaquo;</span>
+                                {% endif %}
+                            </button>
+
+                            {% if usuario_logado.perfil == 'SUPER_ADMIN' %}
+                            <!-- FLYOUT PAINEL DE SELEÇÃO DE ENTIDADES (ABRE À ESQUERDA) -->
+                            <div class="flyout_entidades" id="flyoutEntidades">
+                                <div class="flyout_entidade_topo">
+                                    <h4>Selecione a entidade desejada</h4>
+                                </div>
+
+                                <div class="flyout_dica">
+                                    <span class="dica_icone">ℹ️</span>
+                                    <span>Clique na entidade para navegar pelas suas informações e estoque.</span>
+                                </div>
+
+                                <div class="flyout_busca_container">
+                                    <input type="text" id="filtroEntidadeInput" placeholder="Pesquisar entidade..." class="input_busca_entidade" autocomplete="off">
+                                    <button type="button" class="btn_busca_limpar" id="btnLimparBuscaEntidade" title="Limpar busca">&times;</button>
+                                </div>
+
+                                <div class="flyout_lista_entidades" id="listaEntidadesDisponiveis">
+                                    <!-- OPÇÃO: VISÃO GLOBAL / TODAS AS ENTIDADES -->
+                                    <form action="{{ url_for('auth.trocar_entidade') }}" method="post" class="form_entidade_item">
+                                        <input type="hidden" name="entidade_id" value="">
+                                        <button type="submit" class="item_entidade_btn item_entidade_global {{ 'ativo' if not usuario_logado.entidade_id }}" data-nome="todas as entidades visao global">
+                                            <span class="item_entidade_icone">🌐</span>
+                                            <span class="item_entidade_nome">Todas as Entidades (Visão Global)</span>
+                                        </button>
+                                    </form>
+
+                                    <!-- OPÇÕES: CADA ENTIDADE CADASTRADA -->
+                                    {% for e in entidades_globais %}
+                                    <form action="{{ url_for('auth.trocar_entidade') }}" method="post" class="form_entidade_item">
+                                        <input type="hidden" name="entidade_id" value="{{ e.id }}">
+                                        <button type="submit" class="item_entidade_btn {{ 'ativo' if usuario_logado.entidade_id == e.id }}" data-nome="{{ e.nome|lower }}">
+                                            <span class="item_entidade_icone">📁</span>
+                                            <span class="item_entidade_nome">{{ e.nome }}</span>
+                                        </button>
+                                    </form>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                            {% endif %}
+                        </li>
+
+                        <li class="menu_divisor"></li>
+
+                        <!-- ITEM: SAIR -->
+                        <li>
+                            <a href="{{ url_for('auth.logout') }}" class="menu_item_btn link_logout">
+                                <span class="menu_item_info">
+                                    <span class="menu_icone">🚪</span>
+                                    <span class="menu_rotulo">Sair</span>
+                                </span>
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
         </header>
 
         <!-- CONTEÚDO PRINCIPAL -->
         <main class="principal">
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    <div class="flash_messages">
+                        {% for category, message in messages %}
+                            <div class="alerta alerta_{{ category }}">{{ message }}</div>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+            {% endwith %}
             {% block content %}{% endblock %}
         </main>
+
     </div>
+
+    <!-- SCRIPT DE CONTROLE DO MENU DE USUÁRIO E TROCA DE CONTEXTO -->
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            const btnUsuario = document.getElementById("btnUsuarioMenu");
+            const menuDropdown = document.getElementById("menuUsuarioDropdown");
+            const itemPerfil = document.getElementById("itemMenuPerfil");
+            const itemEntidade = document.getElementById("itemMenuEntidade");
+            const flyoutPerfis = document.getElementById("flyoutPerfis");
+            const flyoutEntidades = document.getElementById("flyoutEntidades");
+            const filtroInput = document.getElementById("filtroEntidadeInput");
+            const btnLimpar = document.getElementById("btnLimparBuscaEntidade");
+            const listaEntidades = document.getElementById("listaEntidadesDisponiveis");
+
+            if (!btnUsuario || !menuDropdown) return;
+
+            // Abrir / Fechar menu principal ao clicar no usuário
+            btnUsuario.addEventListener("click", (e) => {
+                e.stopPropagation();
+                const estaAberto = menuDropdown.classList.toggle("aberto");
+                btnUsuario.setAttribute("aria-expanded", estaAberto);
+                if (!estaAberto) {
+                    fecharSubmenus();
+                }
+            });
+
+            function fecharSubmenus() {
+                if (flyoutPerfis) flyoutPerfis.classList.remove("aberto");
+                if (flyoutEntidades) flyoutEntidades.classList.remove("aberto");
+            }
+
+            // Suporte a clique para abrir submenus
+            if (itemPerfil && flyoutPerfis) {
+                const btnPerfil = itemPerfil.querySelector(".menu_item_btn");
+                if (btnPerfil && !btnPerfil.disabled) {
+                    btnPerfil.addEventListener("click", (e) => {
+                        e.stopPropagation();
+                        if (flyoutEntidades) flyoutEntidades.classList.remove("aberto");
+                        flyoutPerfis.classList.toggle("aberto");
+                    });
+                }
+            }
+
+            if (itemEntidade && flyoutEntidades) {
+                const btnEntidade = itemEntidade.querySelector(".menu_item_btn");
+                if (btnEntidade && !btnEntidade.disabled) {
+                    btnEntidade.addEventListener("click", (e) => {
+                        e.stopPropagation();
+                        if (flyoutPerfis) flyoutPerfis.classList.remove("aberto");
+                        const abrir = flyoutEntidades.classList.toggle("aberto");
+                        if (abrir && filtroInput) {
+                            setTimeout(() => filtroInput.focus(), 100);
+                        }
+                    });
+                }
+            }
+
+            // Fechar ao clicar fora
+            document.addEventListener("click", (e) => {
+                if (!menuDropdown.contains(e.target) && !btnUsuario.contains(e.target)) {
+                    menuDropdown.classList.remove("aberto");
+                    btnUsuario.setAttribute("aria-expanded", "false");
+                    fecharSubmenus();
+                }
+            });
+
+            // Evitar fechar se clicar dentro dos flyouts
+            if (flyoutPerfis) {
+                flyoutPerfis.addEventListener("click", (e) => e.stopPropagation());
+            }
+            if (flyoutEntidades) {
+                flyoutEntidades.addEventListener("click", (e) => e.stopPropagation());
+            }
+
+            // Filtro em tempo real de entidades
+            if (filtroInput && listaEntidades) {
+                filtroInput.addEventListener("input", () => {
+                    const termo = filtroInput.value.toLowerCase().trim();
+                    const botoes = listaEntidades.querySelectorAll(".item_entidade_btn");
+                    botoes.forEach(btn => {
+                        const nome = btn.getAttribute("data-nome") || "";
+                        const itemForm = btn.closest(".form_entidade_item") || btn;
+                        if (nome.includes(termo)) {
+                            itemForm.style.display = "";
+                        } else {
+                            itemForm.style.display = "none";
+                        }
+                    });
+                });
+
+                if (btnLimpar) {
+                    btnLimpar.addEventListener("click", () => {
+                        filtroInput.value = "";
+                        filtroInput.dispatchEvent(new Event("input"));
+                        filtroInput.focus();
+                    });
+                }
+            }
+        });
+    </script>
 
     {% block extra_js %}{% endblock %}
 </body>

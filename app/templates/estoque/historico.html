@@ -1,0 +1,165 @@
+{% extends "base.html" %}
+
+{% block title %}Estok - Histórico de Movimentações{% endblock %}
+
+{% block nav_estoque_active %}ativo{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/suprimentos.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/estoque.css') }}">
+{% endblock %}
+
+{% block content %}
+<div class="topo_pagina">
+    <div>
+        <h2>Histórico de Movimentações</h2>
+        <p>Registro cronológico e auditável das entradas e saídas de estoque.</p>
+    </div>
+    <div style="display: flex; gap: 10px;">
+        {% if item %}
+        <a class="botao botao_destaque" href="{{ url_for('estoque.historico') }}">Ver Todas as Movimentações</a>
+        {% endif %}
+        <a class="botao botao_destaque" href="{{ url_for('estoque.painel') }}">← Voltar ao Painel</a>
+    </div>
+</div>
+
+{% if item %}
+<!-- CARD EM DESTAQUE DO ITEM SELECIONADO -->
+<div class="card_item_destaque" style="background: #fff; border: 1px solid #ddd; border-radius: 4px; padding: 20px; margin-bottom: 25px;">
+    <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 20px;">
+        <div>
+            <span style="font-size: 0.75rem; text-transform: uppercase; color: #888; font-weight: bold; letter-spacing: 0.5px;">Suprimento Selecionado</span>
+            <h3 style="margin: 4px 0 2px; font-size: 1.6rem; color: #001dbe;">{{ item.nome }}</h3>
+            {% if item.codigo_interno %}
+            <small style="color: #666;">Código interno: <code>{{ item.codigo_interno }}</code></small>
+            {% endif %}
+            <div style="margin-top: 4px; font-size: 0.85rem; color: #555;">{{ item.entidade_nome }}</div>
+        </div>
+        <div class="estoque_destaque_box" style="margin: 0;">
+            <div style="text-align: center;">
+                <span style="font-size: 0.75rem; text-transform: uppercase; color: #888; font-weight: bold; display: block;">Estoque Atual</span>
+                <span class="valor_destaque {{ 'vermelho' if item.situacao_estoque != 'normal' else 'verde' }}">
+                    {{ item.estoque_atual }}
+                </span>
+                <small style="color: #666; display: block;">{{ item.unidade_medida or 'un' }}</small>
+            </div>
+            <div style="text-align: center; border-left: 1px solid #eee; padding-left: 25px;">
+                <span style="font-size: 0.75rem; text-transform: uppercase; color: #888; font-weight: bold; display: block;">Estoque Mínimo</span>
+                <span style="font-size: 1.8rem; font-weight: 700; color: #b78103;">
+                    {{ item.estoque_minimo }}
+                </span>
+                <small style="color: #666; display: block;">{{ item.unidade_medida or 'un' }}</small>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<!-- TABELA DE HISTÓRICO DE MOVIMENTAÇÕES -->
+<div class="box_tabela">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+        <h3 style="margin: 0; font-size: 1.15rem; color: #333;">
+            {% if item %}
+            Movimentações de "{{ item.nome }}"
+            {% else %}
+            Todas as Movimentações de Estoque
+            {% endif %}
+        </h3>
+        <span style="font-size: 0.85rem; color: #666;">{{ historico|length }} registro(s) encontrado(s)</span>
+    </div>
+
+    <table class="tabela">
+        <thead>
+            <tr>
+                <th data-tipo="texto">Data / Hora</th>
+                {% if not item %}
+                <th data-tipo="texto">Suprimento</th>
+                {% endif %}
+                <th data-tipo="texto">Tipo</th>
+                <th data-tipo="numero" style="text-align: center;">Qtd</th>
+                <th data-tipo="numero" style="text-align: center;">Antes</th>
+                <th data-nosort style="text-align: center;">→</th>
+                <th data-tipo="numero" style="text-align: center;">Depois</th>
+                <th data-tipo="texto">Responsável</th>
+                <th data-tipo="texto">Origem / Observação</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for m in historico %}
+            <tr>
+                <td>
+                    <small style="color: #555; font-weight: 600;">{{ m.criado_em.strftime('%d/%m/%Y %H:%M') if m.criado_em else '-' }}</small>
+                </td>
+                {% if not item %}
+                <td>
+                    <strong>{{ m.suprimento_nome }}</strong>
+                    {% if m.codigo_interno %}<small style="color: #777;">({{ m.codigo_interno }})</small>{% endif %}
+                </td>
+                {% endif %}
+                <td>
+                    {% if m.tipo == 'entrada' %}
+                    <span class="tipo_mov_badge tipo_entrada">🟢 Entrada</span>
+                    {% elif m.tipo == 'saida' %}
+                    <span class="tipo_mov_badge tipo_saida">🔴 Saída</span>
+                    {% else %}
+                    <span class="tipo_mov_badge tipo_ajuste">🟡 Ajuste</span>
+                    {% endif %}
+                </td>
+                <td style="text-align: center; font-weight: bold;">{{ m.quantidade }}</td>
+                <td style="text-align: center; color: #666;">{{ m.quantidade_anterior }}</td>
+                <td style="text-align: center; color: #aaa;">→</td>
+                <td style="text-align: center;">
+                    <strong style="color: {{ '#2e7d32' if m.quantidade_posterior > m.quantidade_anterior else '#c62828' }};">
+                        {{ m.quantidade_posterior }}
+                    </strong>
+                </td>
+                <td><small>{{ m.usuario_nome }}</small></td>
+                <td>
+                    <small style="color: #555;">
+                        {{ m.observacao or '-' }}
+                        {% if m.solicitacao_id %}
+                        <a href="{{ url_for('solicitacoes.detalhe', id=m.solicitacao_id) }}" class="tag_chamado" style="margin-left: 4px;">#{{ m.solicitacao_id }}</a>
+                        {% endif %}
+                    </small>
+                </td>
+            </tr>
+            {% else %}
+            <tr>
+                <td colspan="{{ 9 if not item else 8 }}">Nenhuma movimentação registrada para este suprimento.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    const tabela = document.querySelector(".tabela");
+    const cabecalhos = tabela.querySelectorAll("th[data-tipo]");
+
+    cabecalhos.forEach(th => {
+        th.addEventListener("click", () => {
+            const crescente = !th.classList.contains("asc");
+            cabecalhos.forEach(c => c.classList.remove("asc", "desc"));
+            th.classList.add(crescente ? "asc" : "desc");
+
+            const tbody = tabela.tBodies[0];
+            const linhas = Array.from(tbody.rows);
+            const coluna = th.cellIndex;
+            const numerico = th.dataset.tipo === "numero";
+
+            linhas.sort((a, b) => {
+                const x = a.cells[coluna].textContent.trim();
+                const y = b.cells[coluna].textContent.trim();
+                const r = numerico
+                    ? parseFloat(x) - parseFloat(y)
+                    : x.localeCompare(y, "pt-BR", { sensitivity: "base", numeric: true });
+                return crescente ? r : -r;
+            });
+
+            linhas.forEach(l => tbody.appendChild(l));
+        });
+    });
+</script>
+{% endblock %}

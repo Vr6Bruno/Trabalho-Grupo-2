@@ -1,0 +1,98 @@
+{% extends "base.html" %}
+
+{% block title %}Estok - Nova Solicitação{% endblock %}
+
+{% block nav_solicitacoes_active %}ativo{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/novo_suprimento.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/solicitacoes.css') }}">
+{% endblock %}
+
+{% block content %}
+<div class="topo_pagina">
+    <div>
+        <h2>Nova Solicitação de Suprimentos</h2>
+        <p>Selecione os recursos necessários e informe as quantidades desejadas.</p>
+    </div>
+    <a class="botao botao_destaque" href="{{ url_for('solicitacoes.lista') }}">← Voltar</a>
+</div>
+
+{% if erros %}
+<ul class="erros">
+    {% for e in erros %}
+    <li>{{ e }}</li>
+    {% endfor %}
+</ul>
+{% endif %}
+
+<form class="formulario" method="post" style="max-width: 800px;">
+    <div class="secao" style="margin-bottom: 25px;">
+        <h3>Itens Solicitados</h3>
+        <p style="font-size: 0.85rem; color: #666; margin-top: -5px; margin-bottom: 15px;">
+            Escolha o suprimento e a quantidade necessária.
+        </p>
+
+        <div id="container_itens">
+            <!-- Linha inicial de item -->
+            <div class="item_linha_dinamica">
+                <div>
+                    <label style="font-size: 0.8rem; font-weight: bold; display: block; margin-bottom: 3px;">Suprimento</label>
+                    <select name="item_suprimento_id[]" required style="width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 3px;">
+                        <option value="">Selecione um suprimento...</option>
+                        {% for s in suprimentos %}
+                        <option value="{{ s.id }}">{{ s.nome }} ({{ s.unidade_medida or 'un' }}) - Estoque atual: {{ s.estoque_atual }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div>
+                    <label style="font-size: 0.8rem; font-weight: bold; display: block; margin-bottom: 3px;">Quantidade</label>
+                    <input type="number" name="item_quantidade[]" min="1" value="1" required style="width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 3px;">
+                </div>
+                <div style="padding-top: 18px;">
+                    <button type="button" class="btn_remover_item" onclick="removerLinha(this)" style="background: none; border: none; color: #c62828; font-size: 1.2rem; cursor: pointer;" title="Remover item">✕</button>
+                </div>
+            </div>
+        </div>
+
+        <button type="button" class="botao botao_destaque" onclick="adicionarLinha()" style="margin-top: 10px;">
+            + Adicionar outro suprimento
+        </button>
+    </div>
+
+    <div class="secao" style="margin-bottom: 25px;">
+        <h3>Justificativa / Observações</h3>
+        <label class="campo largo">
+            <textarea name="observacao" rows="3" placeholder="Informe o motivo da solicitação, setor de destino ou qualquer detalhe relevante..."></textarea>
+        </label>
+    </div>
+
+    <div class="acoes">
+        <a class="botao botao_destaque" href="{{ url_for('solicitacoes.lista') }}">Cancelar</a>
+        <button type="submit" class="botao botao_primario">Enviar Solicitação</button>
+    </div>
+</form>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    const container = document.getElementById("container_itens");
+
+    function adicionarLinha() {
+        const primeiraLinha = container.querySelector(".item_linha_dinamica");
+        const novaLinha = primeiraLinha.cloneNode(true);
+        novaLinha.querySelector("select").value = "";
+        novaLinha.querySelector("input").value = "1";
+        container.appendChild(novaLinha);
+    }
+
+    function removerLinha(btn) {
+        const linhas = container.querySelectorAll(".item_linha_dinamica");
+        if (linhas.length > 1) {
+            btn.closest(".item_linha_dinamica").remove();
+        } else {
+            alert("A solicitação deve conter pelo menos um item.");
+        }
+    }
+</script>
+{% endblock %}

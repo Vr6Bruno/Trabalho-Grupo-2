@@ -1,0 +1,120 @@
+* {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: Arial, Helvetica, sans-serif;
+    background-color: #f0f2f5;
+    color: #222;
+}
+
+.login_container {
+    width: 100%;
+    max-width: 400px;
+    padding: 20px;
+}
+
+.login_card {
+    background-color: #ffffff;
+    border-radius: 6px;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+    padding: 35px 30px;
+}
+
+.login_topo {
+    text-align: center;
+    margin-bottom: 25px;
+}
+
+.login_logo {
+    display: inline-block;
+    background-color: #001dbe;
+    color: #ffffff;
+    font-size: 1.8rem;
+    font-weight: 800;
+    padding: 8px 24px;
+    border-radius: 4px;
+    margin-bottom: 12px;
+}
+
+.login_topo h2 {
+    margin: 0 0 6px;
+    font-size: 1.3rem;
+    color: #111;
+}
+
+.login_topo p {
+    margin: 0;
+    font-size: 0.88rem;
+    color: #666;
+}
+
+.login_erro {
+    background-color: #fdecea;
+    color: #c62828;
+    border-left: 4px solid #c62828;
+    padding: 10px 14px;
+    font-size: 0.88rem;
+    margin-bottom: 20px;
+    border-radius: 2px;
+}
+
+.form_grupo {
+    margin-bottom: 18px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.form_grupo label {
+    font-size: 0.85rem;
+    font-weight: bold;
+    color: #333;
+}
+
+.form_grupo input {
+    width: 100%;
+    padding: 10px 12px;
+    border: 1px solid #888;
+    border-radius: 3px;
+    font-size: 0.95rem;
+    font-family: inherit;
+    transition: border-color 0.2s;
+}
+
+.form_grupo input:focus {
+    outline: none;
+    border-color: #001dbe;
+}
+
+.btn_entrar {
+    width: 100%;
+    padding: 12px;
+    background-color: #001dbe;
+    color: #ffffff;
+    border: none;
+    border-radius: 3px;
+    font-size: 1rem;
+    font-weight: bold;
+    cursor: pointer;
+    margin-top: 8px;
+    transition: background-color 0.2s;
+}
+
+.btn_entrar:hover {
+    background-color: #001799;
+}
+
+.login_rodape {
+    margin-top: 25px;
+    padding-top: 15px;
+    border-top: 1px solid #eee;
+    text-align: center;
+    font-size: 0.78rem;
+    color: #888;
+}

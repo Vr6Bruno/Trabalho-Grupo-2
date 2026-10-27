@@ -1,0 +1,166 @@
+{% extends "base.html" %}
+
+{% block title %}Estok - Compilado Operacional{% endblock %}
+
+{% block nav_solicitacoes_active %}ativo{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/suprimentos.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/solicitacoes.css') }}">
+{% endblock %}
+
+{% block content %}
+<div class="topo_pagina">
+    <div>
+        <h2>Compilado Operacional</h2>
+        <p>Separe do estoque os itens de solicitações aprovadas ou encaminhe pedidos de compra.</p>
+    </div>
+    <div style="display: flex; gap: 10px;">
+        <a class="botao botao_destaque" href="{{ url_for('solicitacoes.lista') }}">← Voltar</a>
+        <a class="botao botao_destaque" href="{{ url_for('pedidos.lista') }}">🛒 Pedidos de Compra</a>
+    </div>
+</div>
+
+{% if not tickets %}
+<div style="background: #fff; border: 1px solid #ddd; border-radius: 6px; padding: 50px 20px; text-align: center; margin-top: 20px;">
+    <div style="font-size: 3rem; margin-bottom: 10px;">✅</div>
+    <h3 style="color: #2e7d32; margin: 0 0 8px;">Tudo em dia!</h3>
+    <p style="color: #666; margin: 0;">Nenhum item aprovado pendente de separação de estoque no momento.</p>
+</div>
+{% else %}
+
+{% for t in tickets %}
+<div class="card_compilado">
+    <div class="card_compilado_header">
+        <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
+            <a href="{{ url_for('solicitacoes.detalhe', id=t.id) }}" class="compilado_id_tag">
+                #{{ t.id }}
+            </a>
+            <span style="font-weight: 600; color: #222;">{{ t.solicitante_nome }}</span>
+            <small style="color: #888;">({{ t.entidade_nome }})</small>
+            <small style="color: #666;">- {{ t.criado_em.strftime('%d/%m/%Y %H:%M') if t.criado_em else '' }}</small>
+        </div>
+
+        <div>
+            {% if t.can_separate > 0 %}
+            <button type="button" class="botao botao_primario" style="background-color: #2e7d32; border-color: #2e7d32;" onclick="abrirModalSeparar({{ t.id }})">
+                📦 Separar do Estoque ({{ t.can_separate }} un disp.)
+            </button>
+            {% else %}
+            <button type="button" class="botao botao_destaque" disabled style="opacity: 0.6; cursor: not-allowed;" title="Estoque insuficiente para separação imediata">
+                ⛔ Sem estoque disponível
+            </button>
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="card_compilado_body">
+        <table class="tabela" style="margin: 0; border: none;">
+            <thead>
+                <tr>
+                    <th>Suprimento</th>
+                    <th style="text-align: center;">Estoque Atual</th>
+                    <th style="text-align: center;">Solicitado</th>
+                    <th style="text-align: center;">Já Atendido</th>
+                    <th style="text-align: center;">Pendente</th>
+                    <th style="text-align: center;">Falta Comprar</th>
+                    <th style="text-align: right;">Ação</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in t.itens %}
+                <tr>
+                    <td>
+                        <strong>{{ item.suprimento_nome }}</strong>
+                        <br><small style="color: #666;">{{ item.unidade_medida or 'un' }} {% if item.codigo_interno %}({{ item.codigo_interno }}){% endif %}</small>
+                    </td>
+                    <td style="text-align: center;">
+                        <span class="badge {{ 'badge_verde' if item.estoque_atual > item.estoque_minimo else 'badge_vermelho' }}">
+                            {{ item.estoque_atual }}
+                        </span>
+                    </td>
+                    <td style="text-align: center; font-weight: bold;">{{ item.quantidade_solicitada }}</td>
+                    <td style="text-align: center; color: #2e7d32;">{{ item.quantidade_atendida }}</td>
+                    <td style="text-align: center; font-weight: bold; color: {{ '#c62828' if item.pendente > 0 else '#666' }};">
+                        {{ item.pendente }}
+                    </td>
+                    <td style="text-align: center;">
+                        {% if item.para_comprar > 0 %}
+                        <span class="badge badge_vermelho" style="font-size: 0.85rem;">{{ item.para_comprar }} un</span>
+                        {% else %}
+                        <span style="color: #888;">—</span>
+                        {% endif %}
+                    </td>
+                    <td style="text-align: right; white-space: nowrap;">
+                        {% if item.para_comprar > 0 %}
+                        <a href="{{ url_for('pedidos.novo', suprimento_id=item.suprimento_id, quantidade=item.para_comprar, solicitacao_id=t.id) }}" class="botao botao_destaque" style="padding: 4px 8px; font-size: 0.8rem; color: #e65100; border-color: #e65100;">
+                            🛒 Comprar
+                        </a>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- MODAL DE SEPARAÇÃO PARA ESTE TICKET -->
+<dialog id="modal_separar_{{ t.id }}" style="border: 1px solid #ccc; border-radius: 6px; padding: 25px; max-width: 650px; width: 95%; box-shadow: 0 4px 16px rgba(0,0,0,0.2);">
+    <h3 style="margin-top: 0; color: #001dbe; border-bottom: 1px solid #eee; padding-bottom: 10px;">
+        Separar Itens - Solicitação #{{ t.id }}
+    </h3>
+    <p style="font-size: 0.85rem; color: #555; margin-bottom: 15px;">
+        Ajuste as quantidades a separar. O sistema limita automaticamente a quantidade ao menor valor entre o pendente e o estoque atual disponível.
+    </p>
+
+    <form action="{{ url_for('solicitacoes.separar', id=t.id) }}" method="post">
+        <table class="tabela" style="font-size: 0.85rem; margin-bottom: 20px;">
+            <thead>
+                <tr>
+                    <th>Suprimento</th>
+                    <th style="text-align: center;">Estoque</th>
+                    <th style="text-align: center;">Pendente</th>
+                    <th style="text-align: center; width: 120px;">Qtd a Separar</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in t.itens %}
+                {% if item.pendente > 0 and item.estoque_atual > 0 %}
+                <tr>
+                    <td><strong>{{ item.suprimento_nome }}</strong></td>
+                    <td style="text-align: center;">{{ item.estoque_atual }}</td>
+                    <td style="text-align: center; color: #c62828; font-weight: bold;">{{ item.pendente }}</td>
+                    <td style="text-align: center;">
+                        <input type="number" name="qtd_separar_{{ item.id }}" min="0" max="{{ item.pode_separar }}" value="{{ item.pode_separar }}" style="width: 80px; text-align: center; padding: 4px; border: 1px solid #bbb; border-radius: 3px; font-weight: bold;">
+                    </td>
+                </tr>
+                {% endif %}
+                {% endfor %}
+            </tbody>
+        </table>
+
+        <div style="display: flex; justify-content: flex-end; gap: 10px; border-top: 1px solid #eee; padding-top: 15px;">
+            <button type="button" class="botao botao_destaque" onclick="document.getElementById('modal_separar_{{ t.id }}').close()">Cancelar</button>
+            <button type="submit" class="botao botao_primario" style="background-color: #2e7d32; border-color: #2e7d32;">
+                Confirmar Separação e Baixa de Estoque
+            </button>
+        </div>
+    </form>
+</dialog>
+
+{% endfor %}
+
+{% endif %}
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    function abrirModalSeparar(id) {
+        const modal = document.getElementById("modal_separar_" + id);
+        if (modal) {
+            modal.showModal();
+        }
+    }
+</script>
+{% endblock %}

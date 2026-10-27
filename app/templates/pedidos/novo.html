@@ -1,0 +1,77 @@
+{% extends "base.html" %}
+
+{% block title %}Estok - Novo Pedido de Compra{% endblock %}
+
+{% block nav_pedidos_active %}ativo{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/novo_suprimento.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/pedidos.css') }}">
+{% endblock %}
+
+{% block content %}
+<div class="topo_pagina">
+    <div>
+        <h2>Novo Pedido de Compra</h2>
+        <p>Inicie um pedido de compra para aquisição e reposição de itens no estoque.</p>
+    </div>
+    <a class="botao botao_destaque" href="{{ url_for('pedidos.lista') }}">← Voltar</a>
+</div>
+
+{% if erros %}
+<ul class="erros">
+    {% for e in erros %}
+    <li>{{ e }}</li>
+    {% endfor %}
+</ul>
+{% endif %}
+
+<form class="formulario" method="post" style="max-width: 650px;">
+    <div class="secao">
+        <h3>Identificação do Pedido</h3>
+        <div class="campos">
+            <label class="campo largo">
+                <span>Nome do Pedido <span class="obrigatorio">*</span></span>
+                <input type="text" name="nome" required autofocus placeholder="Ex: Compra Reposição Junho, Cotação Limpeza...">
+            </label>
+
+            <label class="campo largo">
+                <span>Observações / Finalidade</span>
+                <textarea name="observacao" rows="3" placeholder="Informações adicionais para a equipe de compras..."></textarea>
+            </label>
+        </div>
+    </div>
+
+    {% if suprimento_param %}
+    <div class="secao" style="margin-top: 20px;">
+        <h3>Item de Origem (Compilado Operacional)</h3>
+        <p style="font-size: 0.85rem; color: #666; margin-top: -5px; margin-bottom: 12px;">
+            Este item será adicionado automaticamente ao novo pedido de compra.
+        </p>
+
+        <div class="campos">
+            <label class="campo">
+                <span>Suprimento</span>
+                <select name="item_suprimento_id" required>
+                    {% for s in suprimentos %}
+                    <option value="{{ s.id }}" {{ 'selected' if s.id == suprimento_param }}>{{ s.nome }} ({{ s.unidade_medida or 'un' }})</option>
+                    {% endfor %}
+                </select>
+            </label>
+
+            <label class="campo">
+                <span>Quantidade Necessária</span>
+                <input type="number" name="item_quantidade" min="1" value="{{ qtd_param }}" required>
+            </label>
+
+            <input type="hidden" name="item_observacao" value="Origem: Solicitação #{{ sol_param if sol_param else '-' }}">
+        </div>
+    </div>
+    {% endif %}
+
+    <div class="acoes">
+        <a class="botao botao_destaque" href="{{ url_for('pedidos.lista') }}">Cancelar</a>
+        <button type="submit" class="botao botao_primario">Criar Pedido</button>
+    </div>
+</form>
+{% endblock %}

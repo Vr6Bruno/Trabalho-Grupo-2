@@ -1,0 +1,132 @@
+{% extends "base.html" %}
+
+{% block title %}Estok - Gestão de Usuários{% endblock %}
+
+{% block nav_usuarios_active %}ativo{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/admin.css') }}">
+{% endblock %}
+
+{% block content %}
+<div class="topo_pagina">
+    <div>
+        <h2>Gestão de Usuários</h2>
+        <p>Cadastre operadores, gerentes e solicitantes vinculados a cada entidade.</p>
+    </div>
+    <a class="botao botao_destaque" href="{{ url_for('admin.usuarios_novo') }}">+ Novo Usuário</a>
+</div>
+
+<!-- FILTROS -->
+<form class="filtros" method="get" action="{{ url_for('admin.usuarios_lista') }}">
+    <label>Login, Nome ou E-mail
+        <input type="text" name="busca" value="{{ filtros.busca }}" placeholder="Buscar por login ou nome...">
+    </label>
+
+    {% if is_super_admin %}
+    <label>Entidade
+        <select name="entidade_id">
+            <option value="">Todas as Entidades</option>
+            {% for e in entidades %}
+            <option value="{{ e.id }}" {{ 'selected' if filtros.entidade_id == (e.id|string) }}>{{ e.nome }}</option>
+            {% endfor %}
+        </select>
+    </label>
+    {% endif %}
+
+    <label>Perfil
+        <select name="perfil_id">
+            <option value="">Todos os Perfis</option>
+            {% for p in perfis %}
+            <option value="{{ p.id }}" {{ 'selected' if filtros.perfil_id == (p.id|string) }}>{{ p.nome }}</option>
+            {% endfor %}
+        </select>
+    </label>
+
+    <label>Status
+        <select name="status">
+            <option value="" {{ 'selected' if filtros.status == '' }}>Todos</option>
+            <option value="1" {{ 'selected' if filtros.status == '1' }}>Ativos</option>
+            <option value="0" {{ 'selected' if filtros.status == '0' }}>Inativos</option>
+        </select>
+    </label>
+
+    <button type="submit" class="botao botao_destaque">Pesquisar</button>
+</form>
+
+<!-- TABELA -->
+<div class="box_tabela">
+    <table class="tabela">
+        <thead>
+            <tr>
+                <th data-tipo="texto">Login</th>
+                <th data-tipo="texto">Nome Completo</th>
+                <th data-tipo="texto">Perfil(is)</th>
+                <th data-tipo="texto">Entidade Vinculada</th>
+                <th data-tipo="texto">E-mail</th>
+                <th data-tipo="texto">Status</th>
+                <th data-nosort>Ações</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for u in usuarios %}
+            <tr>
+                <td><code><strong>{{ u.login }}</strong></code></td>
+                <td>{{ u.nome }}</td>
+                <td>{{ u.todos_perfis or u.perfil_nome }}</td>
+                <td>{{ u.entidade_nome }}</td>
+                <td>{{ u.email or '-' }}</td>
+                <td>
+                    {% if u.status %}
+                    <span class="status_ativo">Ativo</span>
+                    {% else %}
+                    <span class="status_inativo">Inativo</span>
+                    {% endif %}
+                </td>
+                <td>
+                    <a class="link_acao" href="{{ url_for('admin.usuarios_editar', id=u.id) }}">Editar</a>
+                </td>
+            </tr>
+            {% else %}
+            <tr>
+                <td colspan="7">Nenhum usuário encontrado.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<!-- ORDENAÇÃO DA TABELA: clique no cabeçalho alterna crescente/decrescente -->
+<script>
+    const tabela = document.querySelector(".tabela");
+    const cabecalhos = tabela.querySelectorAll("th[data-tipo]");
+
+    cabecalhos.forEach(th => {
+        th.addEventListener("click", () => {
+            const crescente = !th.classList.contains("asc");
+
+            cabecalhos.forEach(c => c.classList.remove("asc", "desc"));
+            th.classList.add(crescente ? "asc" : "desc");
+
+            const tbody = tabela.tBodies[0];
+            const linhas = Array.from(tbody.rows);
+            const coluna = th.cellIndex;
+            const numerico = th.dataset.tipo === "numero";
+
+            linhas.sort((a, b) => {
+                const x = a.cells[coluna].textContent.trim();
+                const y = b.cells[coluna].textContent.trim();
+                const r = numerico
+                    ? parseFloat(x) - parseFloat(y)
+                    : x.localeCompare(y, "pt-BR", { sensitivity: "base", numeric: true });
+                return crescente ? r : -r;
+            });
+
+            linhas.forEach(l => tbody.appendChild(l));
+        });
+    });
+</script>
+{% endblock %}
+
