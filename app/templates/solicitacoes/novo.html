@@ -27,6 +27,23 @@
 {% endif %}
 
 <form class="formulario" method="post" style="max-width: 800px;">
+    {% if is_admin %}
+    <div class="secao" style="margin-bottom: 25px;">
+        <h3>Entidade</h3>
+        <p style="font-size: 0.85rem; color: #666; margin-top: -5px; margin-bottom: 12px;">
+            Como Super-Admin, selecione a entidade para a qual esta solicitação será destinada:
+        </p>
+        <label class="campo largo">
+            <select name="entidade_id" required onchange="window.location.href = '{{ url_for('solicitacoes.nova') }}?entidade_id=' + this.value;" style="width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 3px;">
+                <option value="">Selecione a Entidade...</option>
+                {% for ent in entidades %}
+                <option value="{{ ent.id }}" {{ 'selected' if ent.id == entidade_selecionada }}>{{ ent.nome }}</option>
+                {% endfor %}
+            </select>
+        </label>
+    </div>
+    {% endif %}
+
     <div class="secao" style="margin-bottom: 25px;">
         <h3>Itens Solicitados</h3>
         <p style="font-size: 0.85rem; color: #666; margin-top: -5px; margin-bottom: 15px;">

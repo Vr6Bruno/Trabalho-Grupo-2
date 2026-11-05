@@ -12,7 +12,7 @@ Para acessar o sistema com o perfil **Super-Admin** (acesso universal irrestrito
 
 * **URL de Login:** `http://127.0.0.1:5000/login`
 * **Login:** `admin`
-* **Senha:** `admin123`
+* **Senha:** `123`
 
 > **Dica de Navegação:** O usuário `admin` possui todos os perfis associados. No canto superior direito da tela, clicando sobre o seu nome, você pode abrir o menu de **Perfil** para alternar a qualquer momento entre **Super-Admin**, **Administrador**, **Gerente**, **Gestor** ou **Solicitante**, visualizando a interface e restrições de cada perfil em tempo real. Além disso, no menu de **Entidade**, o Super-Admin pode transitar entre as entidades cadastradas ou optar pela **Visão Global (Todas as Entidades)**.
 
@@ -24,11 +24,13 @@ Para facilitar a validação e avaliação dos fluxos de trabalho e permissões,
 
 | Perfil | Login | Senha | Entidade Vinculada | Escopo de Acesso |
 | :--- | :--- | :--- | :--- | :--- |
-| **Super-Admin** | `admin` | `admin123` | *Acesso Global* | Acesso total a todas as entidades, usuários e configurações da plataforma. |
-| **Administrador** | `admin.entidade` | `admin123` | Estok Matriz | Gestão completa da sua entidade: Usuários da empresa, Suprimentos, Estoque, Pedidos e Solicitações. |
-| **Gerente** | `gerente` | `gerente123` | Estok Matriz | Gestão de Suprimentos (CRUD), Pedidos de Compras, Estoque e validação de Solicitações. |
-| **Gestor** | `gestor` | `gestor123` | Estok Matriz | Controle físico de Estoque, separação/entrega de itens, compilado operacional e consulta ao catálogo. |
-| **Solicitante** | `solicitante` | `solicitante123` | Estok Matriz | Abertura e acompanhamento exclusivo das solicitações de suprimentos para o seu setor. |
+| **Super-Admin** | `admin` | `123` | *Acesso Global* | Acesso total a todas as entidades, usuários e configurações da plataforma. |
+| **Michel Salles** | `michel.salles` | `123` | Estok Matriz | Gestor Executivo com múltiplos perfis (Admin, Gerente, Gestor e Solicitante). |
+| **Administrador** | `admin.entidade` | `123` | Estok Matriz | Gestão completa da sua entidade: Usuários da empresa, Suprimentos, Estoque, Pedidos e Solicitações. |
+| **Gerente** | `gerente` | `123` | Estok Matriz | Gestão de Suprimentos (CRUD), Pedidos de Compras, Estoque e validação de Solicitações. |
+| **Gestor** | `gestor` | `123` | Estok Matriz | Controle físico de Estoque, separação/entrega de itens, compilado operacional e consulta ao catálogo. |
+| **Solicitante** | `solicitante` | `123` | Estok Matriz | Abertura e acompanhamento exclusivo das solicitações de suprimentos para o seu setor. |
+| **Bruno Torres** | `bruno.torres` | `123` | UVV - Campus Boa Vista | Gestor da unidade UVV com perfis Admin e Gerente. |
 
 ---
 

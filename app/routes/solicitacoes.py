@@ -64,14 +64,19 @@ def lista():
 def nova():
     usuario = session["usuario"]
     is_admin = bool(usuario.get("perfil") == "SUPER_ADMIN")
+    entidades = modelo_entidade.listar(status="1") if is_admin else []
     entidade_id = obter_entidade_do_contexto()
 
     erros = []
-    suprimentos = modelo_suprimento.listar(entidade_id=entidade_id, status="1")
 
     if request.method == "POST":
         f = request.form
         observacao = f.get("observacao", "").strip()
+
+        if is_admin:
+            form_ent = f.get("entidade_id", "")
+            if form_ent.isdigit():
+                entidade_id = int(form_ent)
 
         # Lê os itens dinâmicos do formulário
         suprimento_ids = f.getlist("item_suprimento_id[]")
@@ -103,9 +108,14 @@ def nova():
             else:
                 erros.append(resultado)
 
+    suprimentos = modelo_suprimento.listar(entidade_id=entidade_id, status="1")
+
     return render_template(
         "solicitacoes/novo.html",
         suprimentos=suprimentos,
+        is_admin=is_admin,
+        entidades=entidades,
+        entidade_selecionada=entidade_id,
         erros=erros
     )
 
@@ -130,9 +140,13 @@ def detalhe(id):
 
     # Identifica se o usuário pode aprovar / rejeitar / separar / entregar de acordo com a UML
     perfil = usuario.get("perfil")
-    pode_validar = perfil in ("SUPER_ADMIN", "ADMIN", "GERENTE", "GESTOR", "ESTOQUISTA") and solicitacao["status"] == "solicitada"
-    pode_separar = perfil in ("SUPER_ADMIN", "ADMIN", "GERENTE", "GESTOR", "ESTOQUISTA") and solicitacao["status"] in ("aprovada", "aguardando_estoque")
-    pode_entregar = perfil in ("SUPER_ADMIN", "ADMIN", "GERENTE", "GESTOR", "ESTOQUISTA") and solicitacao["status"] == "separada"
+    eh_solicitante = perfil == "SOLICITANTE"
+    pode_validar = perfil in ("SUPER_ADMIN", "ADMIN", "GERENTE", "GESTOR") and solicitacao["status"] == "solicitada"
+    pode_separar = perfil in ("SUPER_ADMIN", "ADMIN", "GERENTE", "GESTOR") and solicitacao["status"] in ("aprovada", "aguardando_estoque")
+    pode_entregar = (
+        perfil in ("SUPER_ADMIN", "ADMIN", "GERENTE", "GESTOR") or
+        (eh_solicitante and solicitacao["solicitante_id"] == usuario["id"])
+    ) and solicitacao["status"] == "separada"
     pode_cancelar = (
         (perfil in ("SUPER_ADMIN", "ADMIN", "GERENTE")) or
         (solicitacao["solicitante_id"] == usuario["id"] and solicitacao["status"] == "solicitada")
@@ -146,7 +160,8 @@ def detalhe(id):
         pode_validar=pode_validar,
         pode_separar=pode_separar,
         pode_entregar=pode_entregar,
-        pode_cancelar=pode_cancelar
+        pode_cancelar=pode_cancelar,
+        eh_solicitante=eh_solicitante
     )
 
 
@@ -246,10 +261,20 @@ def separar(id):
 
 
 @bp.route("/solicitacoes/<int:id>/entregar", methods=["POST"])
-@roles_required("SUPER_ADMIN", "ADMIN", "GERENTE", "GESTOR")
+@login_required
 def entregar(id):
     usuario = session["usuario"]
     is_admin = usuario.get("perfil") == "SUPER_ADMIN"
+    perfil = usuario.get("perfil")
+
+    # Solicitante confirma recebimento de sua própria solicitação, ou administradores/gestores entregam
+    if perfil == "SOLICITANTE":
+        sol = modelo_solicitacao.buscar(id, entidade_id=usuario.get("entidade_id"))
+        if not sol or sol["solicitante_id"] != usuario["id"]:
+            abort(403)
+    elif perfil not in ("SUPER_ADMIN", "ADMIN", "GERENTE", "GESTOR"):
+        abort(403)
+
     sucesso, msg = modelo_solicitacao.entregar(
         id=id,
         entregador_id=usuario["id"],

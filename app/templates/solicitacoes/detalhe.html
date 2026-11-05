@@ -17,6 +17,8 @@
         <span class="badge badge_solicitada">Solicitada</span>
         {% elif solicitacao.status == 'aprovada' %}
         <span class="badge badge_aprovada">Aprovada</span>
+        {% elif solicitacao.status == 'aguardando_estoque' %}
+        <span class="badge badge_alerta">Aguardando Estoque</span>
         {% elif solicitacao.status == 'separada' %}
         <span class="badge badge_separada">Separada</span>
         {% elif solicitacao.status == 'entregue' %}
@@ -101,8 +103,8 @@
 
         {% if pode_entregar %}
         <form action="{{ url_for('solicitacoes.entregar', id=solicitacao.id) }}" method="post" style="display: inline;">
-            <button type="submit" class="botao botao_primario" style="background-color: #004d40; border-color: #004d40;" onclick="return confirm('Confirmar a entrega dos itens ao solicitante e concluir atendimento?');">
-                ✓ Concluir Entrega
+            <button type="submit" class="botao botao_primario" style="background-color: #004d40; border-color: #004d40;" onclick="return confirm('{{ 'Confirmar o recebimento dos itens solicitados?' if eh_solicitante else 'Confirmar a entrega dos itens ao solicitante e concluir atendimento?' }}');">
+                {{ '✓ Confirmar Recebimento' if eh_solicitante else '✓ Concluir Entrega' }}
             </button>
         </form>
         {% endif %}

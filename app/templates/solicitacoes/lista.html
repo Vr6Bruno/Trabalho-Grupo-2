@@ -69,6 +69,7 @@
             <option value="" {{ 'selected' if filtros.status == '' }}>Todos os status</option>
             <option value="solicitada" {{ 'selected' if filtros.status == 'solicitada' }}>Solicitada</option>
             <option value="aprovada" {{ 'selected' if filtros.status == 'aprovada' }}>Aprovada</option>
+            <option value="aguardando_estoque" {{ 'selected' if filtros.status == 'aguardando_estoque' }}>Aguardando Estoque</option>
             <option value="separada" {{ 'selected' if filtros.status == 'separada' }}>Separada</option>
             <option value="entregue" {{ 'selected' if filtros.status == 'entregue' }}>Entregue</option>
             <option value="rejeitada" {{ 'selected' if filtros.status == 'rejeitada' }}>Rejeitada</option>
@@ -115,6 +116,8 @@
                     <span class="badge badge_solicitada">Solicitada</span>
                     {% elif s.status == 'aprovada' %}
                     <span class="badge badge_aprovada">Aprovada</span>
+                    {% elif s.status == 'aguardando_estoque' %}
+                    <span class="badge badge_alerta">Aguardando Estoque</span>
                     {% elif s.status == 'separada' %}
                     <span class="badge badge_separada">Separada</span>
                     {% elif s.status == 'entregue' %}

@@ -26,8 +26,8 @@
                 <li class="lista"><a class="botao {% block nav_estoque_active %}{% endblock %}" href="{{ url_for('estoque.painel') }}">Estoque</a></li>
                 {% endif %}
 
-                {# Pedidos: Gerente, Administrador e Super-Admin (Oculto para Gestor e Solicitante) #}
-                {% if p_atual in ('GERENTE', 'ADMIN', 'SUPER_ADMIN') %}
+                {# Pedidos: Gestor (pedir suprimentos), Gerente, Administrador e Super-Admin (Oculto para Solicitante) #}
+                {% if p_atual in ('GESTOR', 'ESTOQUISTA', 'GERENTE', 'ADMIN', 'SUPER_ADMIN') %}
                 <li class="lista"><a class="botao {% block nav_pedidos_active %}{% endblock %}" href="{{ url_for('pedidos.lista') }}">Pedidos</a></li>
                 {% endif %}
 

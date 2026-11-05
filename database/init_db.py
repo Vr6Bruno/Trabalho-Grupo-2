@@ -62,9 +62,14 @@ def inicializar_banco():
                 print(f"[!] Aviso no comando SQL: {e}")
 
     print("[+] Banco de dados inicializado/atualizado com sucesso!")
-    print("[+] Perfis criados: SUPER_ADMIN, GERENTE, ESTOQUISTA, SOLICITANTE")
-    print("[+] Usuário Super-Admin: login='admin' / senha='admin123'")
-    print("[+] Usuário Gerente: login='gerente' / senha='gerente123'")
+    print("[+] Empresas, perfis, catálogo de suprimentos e solicitações importados.")
+    print("[+] Usuários disponíveis (SENHA DE TODOS = '123'):")
+    print("    - Super-Admin:     login='admin'         / senha='123'")
+    print("    - Michel Salles:   login='michel.salles' / senha='123'")
+    print("    - Gerente Matriz:  login='gerente'       / senha='123'")
+    print("    - Gestor Matriz:   login='gestor'        / senha='123'")
+    print("    - Solicitante:     login='solicitante'   / senha='123'")
+    print("    - Admin Entidade:  login='admin.entidade'/ senha='123'")
 
 
 if __name__ == "__main__":

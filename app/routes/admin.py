@@ -340,3 +340,36 @@ def usuarios_editar(id):
         erros=erros
     )
 
+
+@bp.route("/usuarios/<int:id>/excluir", methods=["POST"])
+@admin_required
+def usuarios_excluir(id):
+    usuario_logado = session.get("usuario", {})
+    is_super = usuario_logado.get("perfil") == "SUPER_ADMIN"
+
+    if id == usuario_logado.get("id"):
+        flash("Você não pode excluir sua própria conta de usuário.", "alerta")
+        return redirect(url_for("admin.usuarios_lista"))
+
+    alvo = modelo_usuario.buscar_por_id(id)
+    if not alvo:
+        abort(404)
+
+    # Administrador de Entidade só pode excluir usuários da sua própria entidade e nunca Super-Admin
+    if not is_super:
+        if alvo.get("entidade_id") != usuario_logado.get("entidade_id"):
+            flash("Você só pode gerenciar usuários vinculados à sua entidade.", "alerta")
+            return redirect(url_for("admin.usuarios_lista"))
+        if alvo.get("perfil_codigo") == "SUPER_ADMIN" or any(p["codigo"] == "SUPER_ADMIN" for p in alvo.get("perfis", [])):
+            flash("Você não possui permissão para excluir um Super-Administrador.", "alerta")
+            return redirect(url_for("admin.usuarios_lista"))
+
+    sucesso, msg = modelo_usuario.excluir(id, entidade_id=None if is_super else usuario_logado.get("entidade_id"))
+    if sucesso:
+        flash(msg, "sucesso")
+    else:
+        flash(msg, "alerta")
+
+    return redirect(url_for("admin.usuarios_lista"))
+
+

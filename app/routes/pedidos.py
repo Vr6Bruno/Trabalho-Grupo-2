@@ -21,7 +21,7 @@ def obter_entidade_do_contexto():
 
 
 @bp.route("/pedidos")
-@roles_required("SUPER_ADMIN", "ADMIN", "GERENTE")
+@roles_required("SUPER_ADMIN", "ADMIN", "GERENTE", "GESTOR")
 def lista():
     usuario = session["usuario"]
     is_admin = usuario.get("perfil") == "SUPER_ADMIN"
@@ -49,11 +49,12 @@ def lista():
 
 
 @bp.route("/pedidos/novo", methods=["GET", "POST"])
-@roles_required("SUPER_ADMIN", "ADMIN", "GERENTE")
+@roles_required("SUPER_ADMIN", "ADMIN", "GERENTE", "GESTOR")
 def novo():
     usuario = session["usuario"]
     is_admin = bool(usuario.get("perfil") == "SUPER_ADMIN")
     entidade_id = obter_entidade_do_contexto()
+    entidades = modelo_entidade.listar(status="1") if is_admin else []
 
     suprimento_param = request.args.get("suprimento_id")
     qtd_param = request.args.get("quantidade", "1")
@@ -64,6 +65,11 @@ def novo():
         f = request.form
         nome = f.get("nome", "").strip()
         observacao = f.get("observacao", "").strip()
+
+        if is_admin:
+            form_ent = request.form.get("entidade_id", "")
+            if form_ent.isdigit():
+                entidade_id = int(form_ent)
 
         item_inicial = None
         sid = f.get("item_suprimento_id")
@@ -78,23 +84,30 @@ def novo():
             except ValueError:
                 pass
 
-        sucesso, resultado = modelo_pedido.criar(
-            entidade_id=entidade_id,
-            usuario_id=usuario["id"],
-            nome=nome,
-            observacao=observacao,
-            item_inicial=item_inicial
-        )
-        if sucesso:
-            flash("Pedido de compra criado com sucesso!", "sucesso")
-            return redirect(url_for("pedidos.detalhe", id=resultado))
-        else:
-            erros.append(resultado)
+        if not entidade_id and not item_inicial:
+            erros.append("Selecione uma entidade para o pedido de compra.")
+
+        if not erros:
+            sucesso, resultado = modelo_pedido.criar(
+                entidade_id=entidade_id,
+                usuario_id=usuario["id"],
+                nome=nome,
+                observacao=observacao,
+                item_inicial=item_inicial
+            )
+            if sucesso:
+                flash("Pedido de compra criado com sucesso!", "sucesso")
+                return redirect(url_for("pedidos.detalhe", id=resultado))
+            else:
+                erros.append(resultado)
 
     suprimentos = modelo_suprimento.listar(entidade_id=entidade_id, status="1")
     return render_template(
         "pedidos/novo.html",
         suprimentos=suprimentos,
+        is_admin=is_admin,
+        entidades=entidades,
+        entidade_selecionada=entidade_id,
         suprimento_param=int(suprimento_param) if suprimento_param and suprimento_param.isdigit() else None,
         qtd_param=qtd_param,
         sol_param=sol_param,
@@ -103,7 +116,7 @@ def novo():
 
 
 @bp.route("/pedidos/<int:id>")
-@roles_required("SUPER_ADMIN", "ADMIN", "GERENTE")
+@roles_required("SUPER_ADMIN", "ADMIN", "GERENTE", "GESTOR")
 def detalhe(id):
     usuario = session["usuario"]
     is_admin = usuario.get("perfil") == "SUPER_ADMIN"
@@ -116,7 +129,7 @@ def detalhe(id):
     itens = modelo_pedido.listar_itens(id)
     suprimentos = modelo_suprimento.listar(entidade_id=pedido["entidade_id"], status="1")
 
-    pode_gerenciar = usuario.get("perfil") in ("SUPER_ADMIN", "ADMIN", "GERENTE")
+    pode_gerenciar = usuario.get("perfil") in ("SUPER_ADMIN", "ADMIN", "GERENTE", "GESTOR")
 
     return render_template(
         "pedidos/detalhe.html",
@@ -128,10 +141,10 @@ def detalhe(id):
 
 
 @bp.route("/pedidos/<int:id>/status", methods=["POST"])
-@roles_required("SUPER_ADMIN", "ADMIN", "GERENTE")
+@roles_required("SUPER_ADMIN", "ADMIN", "GERENTE", "GESTOR")
 def atualizar_status(id):
     usuario = session["usuario"]
-    if usuario.get("perfil") not in ("SUPER_ADMIN", "ADMIN", "GERENTE"):
+    if usuario.get("perfil") not in ("SUPER_ADMIN", "ADMIN", "GERENTE", "GESTOR"):
         flash("Apenas gerentes e administradores podem alterar o status do pedido de compra.", "erro")
         return redirect(url_for("pedidos.detalhe", id=id))
 
@@ -154,7 +167,7 @@ def atualizar_status(id):
 
 
 @bp.route("/pedidos/<int:id>/adicionar-item", methods=["POST"])
-@roles_required("SUPER_ADMIN", "ADMIN", "GERENTE")
+@roles_required("SUPER_ADMIN", "ADMIN", "GERENTE", "GESTOR")
 def adicionar_item(id):
     usuario = session["usuario"]
     f = request.form
@@ -185,7 +198,7 @@ def adicionar_item(id):
 
 
 @bp.route("/pedidos/<int:id>/remover-item/<int:item_id>", methods=["POST"])
-@roles_required("SUPER_ADMIN", "ADMIN", "GERENTE")
+@roles_required("SUPER_ADMIN", "ADMIN", "GERENTE", "GESTOR")
 def remover_item(id, item_id):
     sucesso, msg = modelo_pedido.remover_item(item_id=item_id, pedido_id=id)
     if sucesso:
@@ -196,10 +209,10 @@ def remover_item(id, item_id):
 
 
 @bp.route("/pedidos/<int:id>/receber-item/<int:item_id>", methods=["POST"])
-@roles_required("SUPER_ADMIN", "ADMIN", "GERENTE")
+@roles_required("SUPER_ADMIN", "ADMIN", "GERENTE", "GESTOR")
 def receber_item(id, item_id):
     usuario = session["usuario"]
-    if usuario.get("perfil") not in ("SUPER_ADMIN", "ADMIN", "GERENTE"):
+    if usuario.get("perfil") not in ("SUPER_ADMIN", "ADMIN", "GERENTE", "GESTOR"):
         flash("Permissão negada para registrar recebimento de compras.", "erro")
         return redirect(url_for("pedidos.detalhe", id=id))
 

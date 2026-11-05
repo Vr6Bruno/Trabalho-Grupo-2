@@ -27,6 +27,26 @@
 {% endif %}
 
 <form class="formulario" method="post" style="max-width: 650px;">
+    {% if is_admin %}
+    <div class="secao" style="margin-bottom: 20px;">
+        <h3>Entidade</h3>
+        <p style="font-size: 0.85rem; color: #666; margin-top: -5px; margin-bottom: 12px;">
+            Como Super-Admin, selecione a entidade para a qual este pedido de compra será gerado:
+        </p>
+        <div class="campos">
+            <label class="campo largo">
+                <span>Entidade <span class="obrigatorio">*</span></span>
+                <select name="entidade_id" required onchange="window.location.href = '{{ url_for('pedidos.novo') }}?entidade_id=' + this.value;">
+                    <option value="">Selecione uma entidade...</option>
+                    {% for ent in entidades %}
+                    <option value="{{ ent.id }}" {{ 'selected' if ent.id == entidade_selecionada }}>{{ ent.nome }}</option>
+                    {% endfor %}
+                </select>
+            </label>
+        </div>
+    </div>
+    {% endif %}
+
     <div class="secao">
         <h3>Identificação do Pedido</h3>
         <div class="campos">

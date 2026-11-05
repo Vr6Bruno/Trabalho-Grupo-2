@@ -218,3 +218,62 @@ def atualizar(id, d, nova_senha=None):
         cur.execute(sql, params)
         if perfil_ids:
             sincronizar_perfis(id, perfil_ids)
+
+
+def pode_excluir(id):
+    """Verifica se o usuário possui histórico que impede exclusão física direta."""
+    if id == 1:
+        return False, "O Super Administrador principal do sistema não pode ser excluído."
+
+    with conectar() as conn, conn.cursor() as cur:
+        # Verifica se possui solicitações abertas ou vinculadas
+        cur.execute("SELECT COUNT(*) AS total FROM solicitacao WHERE solicitante_id = %s OR validador_id = %s OR responsavel_entrega_id = %s", (id, id, id))
+        if cur.fetchone()["total"] > 0:
+            return False, "possui_historico"
+
+        # Verifica se possui movimentações de estoque
+        cur.execute("SELECT COUNT(*) AS total FROM movimentacao_estoque WHERE usuario_id = %s", (id,))
+        if cur.fetchone()["total"] > 0:
+            return False, "possui_historico"
+
+        # Verifica se possui pedidos de compra
+        cur.execute("SELECT COUNT(*) AS total FROM pedido_compra WHERE usuario_id = %s", (id,))
+        if cur.fetchone()["total"] > 0:
+            return False, "possui_historico"
+
+        # Verifica se possui eventos em histórico
+        cur.execute("SELECT COUNT(*) AS total FROM historico_solicitacao WHERE usuario_id = %s", (id,))
+        if cur.fetchone()["total"] > 0:
+            return False, "possui_historico"
+
+        return True, ""
+
+
+def excluir(id, entidade_id=None):
+    """
+    Exclui o usuário do sistema.
+    Caso possua histórico operacional vinculado (solicitações, estoque, compras),
+    realiza a inativação automática (soft delete) para garantir a integridade referencial.
+    """
+    pode_fisica, motivo = pode_excluir(id)
+
+    if not pode_fisica and motivo != "possui_historico":
+        return False, motivo
+
+    with conectar() as conn, conn.cursor() as cur:
+        # Se restrito a entidade, valida que o usuário pertence a ela
+        if entidade_id is not None:
+            cur.execute("SELECT entidade_id FROM usuario WHERE id = %s", (id,))
+            u = cur.fetchone()
+            if not u or u["entidade_id"] != entidade_id:
+                return False, "Usuário não pertence à sua entidade."
+
+        if pode_fisica:
+            cur.execute("DELETE FROM usuario_perfil WHERE usuario_id = %s", (id,))
+            cur.execute("DELETE FROM usuario WHERE id = %s", (id,))
+            return True, "Usuário excluído definitivamente do sistema."
+        else:
+            # Inativação para preservar integridade
+            cur.execute("UPDATE usuario SET status = 0 WHERE id = %s", (id,))
+            return True, "O usuário possui histórico operacional vinculado e foi inativado para preservar a auditoria."
+

@@ -5,12 +5,12 @@ def resumo(entidade_id=None, solicitante_id=None):
     """Contadores das solicitações por estado."""
     sql = """
         SELECT
-            COUNT(*)                                                  AS total,
-            COALESCE(SUM(status = 'solicitada'), 0)                   AS solicitadas,
-            COALESCE(SUM(status = 'aprovada'), 0)                     AS aprovadas,
-            COALESCE(SUM(status = 'separada'), 0)                     AS separadas,
-            COALESCE(SUM(status = 'entregue'), 0)                     AS entregues,
-            COALESCE(SUM(status IN ('rejeitada', 'cancelada')), 0)    AS canceladas
+            COUNT(*)                                                          AS total,
+            COALESCE(SUM(status = 'solicitada'), 0)                           AS solicitadas,
+            COALESCE(SUM(status IN ('aprovada', 'aguardando_estoque')), 0)    AS aprovadas,
+            COALESCE(SUM(status = 'separada'), 0)                             AS separadas,
+            COALESCE(SUM(status = 'entregue'), 0)                             AS entregues,
+            COALESCE(SUM(status IN ('rejeitada', 'cancelada')), 0)            AS canceladas
         FROM solicitacao
         WHERE 1 = 1
     """
@@ -152,16 +152,24 @@ def criar(entidade_id, solicitante_id, itens, observacao=None):
         return False, "Informe pelo menos um item para a solicitação."
 
     with conectar() as conn, conn.cursor() as cur:
+        # Validação: os suprimentos devem existir, estar ativos e pertencer à entidade
+        for it in itens:
+            cur.execute("SELECT id, nome, status, entidade_id FROM suprimento WHERE id = %s", (it["suprimento_id"],))
+            sup = cur.fetchone()
+            if not sup:
+                return False, f"Suprimento #{it['suprimento_id']} não encontrado."
+            if int(sup["status"]) != 1:
+                return False, f"O suprimento '{sup['nome']}' está inativo e não pode ser solicitado (RN-12)."
+            if entidade_id and sup["entidade_id"] != entidade_id:
+                return False, f"O suprimento '{sup['nome']}' não pertence à entidade selecionada."
+            if not entidade_id:
+                entidade_id = sup["entidade_id"]
+
         if not entidade_id:
-            cur.execute("SELECT entidade_id FROM suprimento WHERE id = %s", (itens[0]["suprimento_id"],))
+            cur.execute("SELECT id FROM entidade WHERE status = 1 ORDER BY id ASC LIMIT 1")
             row_ent = cur.fetchone()
             if row_ent:
-                entidade_id = row_ent["entidade_id"]
-            else:
-                cur.execute("SELECT id FROM entidade WHERE status = 1 ORDER BY id ASC LIMIT 1")
-                row_ent = cur.fetchone()
-                if row_ent:
-                    entidade_id = row_ent["id"]
+                entidade_id = row_ent["id"]
 
         # Insere a solicitação
         cur.execute("""
@@ -169,7 +177,6 @@ def criar(entidade_id, solicitante_id, itens, observacao=None):
             VALUES (%s, %s, 'solicitada', %s)
         """, (entidade_id, solicitante_id, observacao.strip() if observacao else None))
         solicitacao_id = cur.lastrowid
-
 
         # Insere os itens
         for it in itens:
@@ -370,16 +377,17 @@ def separar_itens(solicitacao_id, itens_separar, operador_id, entidade_id=None):
             msg_hist = f"Separação concluída com sucesso ({total_separado_nesta_operacao} itens separados). Solicitação pronta para entrega."
             cur.execute("""
                 INSERT INTO historico_solicitacao (solicitacao_id, usuario_id, estado_anterior, estado_novo, descricao)
-                VALUES (%s, %s, 'aprovada', 'separada', %s)
-            """, (solicitacao_id, operador_id, msg_hist))
+                VALUES (%s, %s, %s, 'separada', %s)
+            """, (solicitacao_id, operador_id, sol["status"], msg_hist))
             return True, "Todos os itens foram separados! Solicitação pronta para entrega."
         else:
             msg_hist = f"Separação parcial realizada ({total_separado_nesta_operacao} itens separados). Aguardando restante do estoque."
+            cur.execute("UPDATE solicitacao SET status = 'aguardando_estoque' WHERE id = %s", (solicitacao_id,))
             cur.execute("""
                 INSERT INTO historico_solicitacao (solicitacao_id, usuario_id, estado_anterior, estado_novo, descricao)
-                VALUES (%s, %s, 'aprovada', 'aprovada', %s)
-            """, (solicitacao_id, operador_id, msg_hist))
-            return True, f"Separação parcial registrada ({total_separado_nesta_operacao} itens separados)."
+                VALUES (%s, %s, %s, 'aguardando_estoque', %s)
+            """, (solicitacao_id, operador_id, sol["status"], msg_hist))
+            return True, f"Separação parcial registrada ({total_separado_nesta_operacao} itens separados). Solicitação aguardando reposição de estoque."
 
 
 def entregar(id, entregador_id, entidade_id=None):
