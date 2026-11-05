@@ -1,70 +1,5 @@
-/* ---------- ESTILOS ESPECÍFICOS DE ESTOQUE ---------- */
-
-.resumo_estoque {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-    gap: 15px;
-    margin-bottom: 25px;
-}
-
-.card_estoque {
-    background: #fff;
-    border: 1px solid #e0e0e0;
-    border-radius: 4px;
-    padding: 16px 20px;
-    display: flex;
-    flex-direction: column;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
-}
-
-.card_estoque strong {
-    font-size: 2rem;
-    line-height: 1.1;
-    color: #111;
-}
-
-.card_estoque span {
-    font-size: 0.85rem;
-    color: #666;
-    margin-top: 4px;
-    font-weight: 500;
-}
-
-.card_estoque.verde { border-left: 5px solid #2e7d32; }
-.card_estoque.verde strong { color: #2e7d32; }
-
-.card_estoque.amarelo { border-left: 5px solid #f57f17; }
-.card_estoque.amarelo strong { color: #f57f17; }
-
-.card_estoque.vermelho { border-left: 5px solid #c62828; }
-.card_estoque.vermelho strong { color: #c62828; }
-
-.card_estoque.azul { border-left: 5px solid #001dbe; }
-.card_estoque.azul strong { color: #001dbe; }
-
-/* Status do Saldo */
-.saldo_tag {
-    display: inline-block;
-    padding: 4px 10px;
-    border-radius: 12px;
-    font-size: 0.8rem;
-    font-weight: bold;
-}
-
-.saldo_normal {
-    background-color: #e8f5e9;
-    color: #2e7d32;
-}
-
-.saldo_critico {
-    background-color: #fff8e1;
-    color: #b78103;
-}
-
-.saldo_zerado {
-    background-color: #ffebee;
-    color: #c62828;
-}
+/* ---------- Estoque ---------- */
+/* cards e etiquetas (normal, critico, entrada, saida) agora ficam no base.css */
 
 /* Layout de Movimentação */
 .grade_movimentacao {
@@ -81,9 +16,9 @@
 }
 
 .card_item_destaque {
-    background: #fdfdfd;
-    border: 1px solid #dcdcdc;
-    border-radius: 4px;
+    background: var(--branco);
+    border: 1px solid var(--borda);
+    border-radius: 8px;
     padding: 20px;
     margin-bottom: 20px;
 }
@@ -101,18 +36,80 @@
     line-height: 1;
 }
 
-.valor_destaque.verde { color: #2e7d32; }
-.valor_destaque.vermelho { color: #c62828; }
+.valor_destaque.verde { color: var(--verde); }
+.valor_destaque.vermelho { color: var(--vermelho); }
 
-.tipo_mov_badge {
-    display: inline-block;
-    padding: 2px 8px;
-    border-radius: 3px;
-    font-size: 0.75rem;
-    font-weight: bold;
-    text-transform: uppercase;
+
+/* ---------- Relatório consolidado ---------- */
+/* antes ficava num <style> dentro do html, passei pra ca */
+.relatorio_box {
+    max-width: 900px;
+    margin: 0 auto;
+    background: var(--branco);
+    padding: 30px;
+    border: 1px solid var(--borda);
+    border-radius: 8px;
+    overflow-x: auto;
 }
 
-.tipo_entrada { background-color: #e8f5e9; color: #1b5e20; }
-.tipo_saida { background-color: #ffebee; color: #b71c1c; }
-.tipo_ajuste { background-color: #fff3e0; color: #e65100; }
+.barra_impressao {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    margin-bottom: 20px;
+}
+
+.secao_relatorio {
+    margin-top: 30px;
+}
+
+.titulo_relatorio {
+    padding: 10px 14px;
+    border-radius: 8px;
+    font-size: 1rem;
+    font-weight: 700;
+    margin-bottom: 12px;
+    border-left: 4px solid;
+}
+
+.secao_separar {
+    background: var(--verde_claro);
+    color: var(--verde);
+}
+
+.secao_comprar {
+    background: var(--amarelo_claro);
+    color: var(--amarelo_texto);
+}
+
+.tabela_relatorio {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.9rem;
+}
+
+.tabela_relatorio th {
+    background-color: var(--fundo);
+    color: var(--texto_fraco);
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    padding: 8px 10px;
+    text-align: left;
+    border-bottom: 1px solid var(--borda);
+}
+
+.tabela_relatorio td {
+    padding: 8px 10px;
+    border-bottom: 1px solid var(--borda);
+}
+
+@media print {
+    .relatorio_box {
+        border: none;
+        padding: 0;
+    }
+
+    .principal {
+        padding: 0;
+    }
+}

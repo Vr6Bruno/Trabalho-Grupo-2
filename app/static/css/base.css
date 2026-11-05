@@ -1,3 +1,33 @@
+/* =====================================================
+   BASE DO ESTOK - tudo que é igual em todas as telas
+   cores e regras tão no manual de marca
+   ===================================================== */
+
+/* cores do projeto, se precisar trocar alguma cor troca aqui */
+:root {
+    --azul: #001dbe;
+    --azul_escuro: #00158f;
+    --azul_claro: #eef1ff;
+    --amarelo: #ffc400;
+    --amarelo_claro: #fff4cc;
+    --amarelo_texto: #7a5a00;
+
+    --texto: #1b1f33;
+    --texto_fraco: #5b6275;
+    --texto_claro: #8a91a5;
+    --borda: #e1e5ef;
+    --borda_campo: #c9cfdd;
+    --fundo: #f4f6fb;
+    --branco: #ffffff;
+
+    --verde: #1e7a4b;
+    --verde_claro: #e3f4e8;
+    --vermelho: #b42318;
+    --vermelho_claro: #fde8e8;
+    --cinza: #5b6275;
+    --cinza_claro: #eceef3;
+}
+
 * {
     box-sizing: border-box;
 }
@@ -6,102 +36,204 @@ body {
     margin: 0;
     min-height: 100vh;
     display: flex;
-    font-family: Arial, Helvetica, sans-serif;
-    background-color: #ffffff;
-    color: #222;
+    font-family: "Inter", Arial, Helvetica, sans-serif;
+    background-color: var(--fundo);
+    color: var(--texto);
+}
+
+a {
+    color: var(--azul);
 }
 
 /* ---------- Menu lateral ---------- */
 .navegador {
-    width: 200px;
+    width: 220px;
     flex-shrink: 0;
-    background-color: #001dbe;
+    background-color: var(--azul);
 }
 
+/* logo no topo do menu */
 .titulo {
     margin: 0;
-    height: 80px;
+    height: 72px;
     display: flex;
     align-items: center;
-    justify-content: center;
-    font-weight: 800;
-    color: white;
+    padding-left: 20px;
+}
+
+.titulo img {
+    height: 30px;
 }
 
 .box_lista {
-    margin: 30px 0 0;
+    margin: 20px 0 0;
     padding: 0;
 }
 
 .lista {
     list-style-type: none;
-    margin-bottom: 10px;
+    margin-bottom: 4px;
 }
 
 .lista_divisor {
     list-style-type: none;
-    margin: 20px 10px 8px 15px;
+    margin: 22px 12px 8px 26px;
 }
 
 .lista_divisor span {
     color: rgba(255, 255, 255, 0.6);
     font-size: 0.72rem;
-    font-weight: bold;
+    font-weight: 700;
     letter-spacing: 0.8px;
 }
 
-/* ---------- Botões ---------- */
-.botao {
+/* itens do menu: texto branco, ativo fica amarelo */
+.navegador .botao {
     display: block;
-    padding: 8px;
-    text-align: center;
-    color: black;
-    background-color: whitesmoke;
-    border-radius: 2px;
-    text-decoration: none;
-    font-size: 0.95rem;
+    margin: 0 12px;
+    padding: 10px 14px;
+    color: var(--branco);
+    background-color: transparent;
+    border: none;
+    border-radius: 8px;
+    font-weight: 500;
+    text-align: left;
+}
+
+.navegador .botao:hover {
+    background-color: var(--azul_escuro);
+}
+
+.navegador .botao.ativo {
+    background-color: var(--amarelo);
+    color: var(--texto);
+    font-weight: 600;
+}
+
+/* ---------- Botões ---------- */
+/* base de todo botão do conteúdo */
+.botao {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    padding: 9px 16px;
+    border: 1px solid transparent;
+    border-radius: 8px;
     font-family: inherit;
-    cursor: pointer;
-    margin-left: 10px;
-    margin-right: 10px;
-}
-
-.botao:hover,
-.botao.ativo {
-    background-color: rgb(255, 196, 0);
-}
-
-.botao_destaque {
-    padding: 8px 16px;
-    background-color: #ffffff;
-    border: 1px black solid;
-    color: black;
+    font-size: 0.9rem;
+    font-weight: 600;
     text-decoration: none;
-    font-size: 0.9rem;
-    font-weight: bold;
+    white-space: nowrap;
     cursor: pointer;
-    border-radius: 2px;
-    display: inline-block;
 }
 
-.botao_destaque:hover {
-    background-color: #f0f0f0;
-}
-
+/* botao azul (ação principal da tela) */
 .botao_primario {
-    padding: 8px 16px;
-    background-color: #001dbe;
-    color: #ffffff;
-    border: 1px solid #001dbe;
-    font-size: 0.9rem;
-    font-weight: bold;
-    cursor: pointer;
-    border-radius: 2px;
-    display: inline-block;
+    background-color: var(--azul);
+    border-color: var(--azul);
+    color: var(--branco);
 }
 
 .botao_primario:hover {
-    background-color: #001799;
+    background-color: var(--azul_escuro);
+    border-color: var(--azul_escuro);
+    color: var(--branco);
+}
+
+/* botao branco com borda (voltar, filtrar, cancelar) */
+.botao_destaque {
+    background-color: var(--branco);
+    border-color: var(--azul);
+    color: var(--azul);
+}
+
+.botao_destaque:hover {
+    background-color: var(--azul_claro);
+}
+
+/* botao verde (aprovar, entregar, separar, receber) */
+.botao_sucesso {
+    background-color: var(--verde);
+    border-color: var(--verde);
+    color: var(--branco);
+}
+
+.botao_sucesso:hover {
+    background-color: #155c38;
+    border-color: #155c38;
+}
+
+/* botao vermelho cheio (excluir) */
+.botao_perigo {
+    background-color: var(--vermelho);
+    border-color: var(--vermelho);
+    color: var(--branco);
+}
+
+.botao_perigo:hover {
+    background-color: #8f1c13;
+    border-color: #8f1c13;
+}
+
+/* botao branco com borda vermelha (rejeitar) */
+.botao_perigo_contorno {
+    background-color: var(--branco);
+    border-color: var(--vermelho);
+    color: var(--vermelho);
+}
+
+.botao_perigo_contorno:hover {
+    background-color: var(--vermelho_claro);
+}
+
+/* botao branco cinza (cancelar solicitação) */
+.botao_neutro {
+    background-color: var(--branco);
+    border-color: var(--borda_campo);
+    color: var(--texto_fraco);
+}
+
+.botao_neutro:hover {
+    background-color: var(--fundo);
+}
+
+/* botao menor, pra usar dentro de tabela */
+.botao_pequeno {
+    padding: 5px 10px;
+    font-size: 0.8rem;
+}
+
+.botao:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+/* link de ação dentro da tabela (Editar, Ver Detalhes, Histórico) */
+.link_acao {
+    color: var(--azul);
+    font-weight: 600;
+    text-decoration: none;
+}
+
+.link_acao:hover {
+    text-decoration: underline;
+}
+
+/* link vermelho (Excluir, remover item) */
+.btn_link_perigo {
+    background: none;
+    border: none;
+    padding: 0;
+    color: var(--vermelho);
+    font-family: inherit;
+    font-size: 0.85rem;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.btn_link_perigo:hover {
+    text-decoration: underline;
 }
 
 /* ---------- Cabeçalho ---------- */
@@ -112,15 +244,15 @@ body {
     flex-direction: column;
 }
 
-/* ---------- Cabeçalho e Menu do Usuário ---------- */
+/* cabeçalho branco, só com o usuário na direita */
 .cabecalho {
-    min-height: 75px;
+    min-height: 72px;
     padding: 0 28px;
     display: flex;
     align-items: center;
     justify-content: space-between;
-    background-color: #001dbe;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
+    background-color: var(--branco);
+    border-bottom: 1px solid var(--borda);
     position: relative;
     z-index: 50;
 }
@@ -138,17 +270,17 @@ body {
     background: transparent;
     border: none;
     cursor: pointer;
-    padding: 6px 12px;
-    border-radius: 6px;
+    padding: 6px 10px;
+    border-radius: 8px;
     display: flex;
     align-items: center;
-    gap: 14px;
-    transition: background 0.2s ease;
+    gap: 12px;
     text-align: right;
+    font-family: inherit;
 }
 
 .usuario_trigger:hover {
-    background-color: rgba(255, 255, 255, 0.12);
+    background-color: var(--fundo);
 }
 
 .usuario_texto {
@@ -158,64 +290,50 @@ body {
 }
 
 .usuario_nome {
-    color: #ffffff;
+    color: var(--texto);
     font-size: 0.95rem;
-    font-weight: 700;
+    font-weight: 600;
     line-height: 1.2;
 }
 
 .usuario_subtitulo {
-    color: rgba(255, 255, 255, 0.85);
+    color: var(--texto_fraco);
     font-size: 0.8rem;
-    font-weight: 400;
     margin-top: 3px;
     line-height: 1.2;
 }
 
+/* avatar redondo com a inicial */
 .avatar {
-    width: 44px;
-    height: 44px;
-    border-radius: 6px;
-    background-color: #ffffff;
-    color: #001dbe;
+    width: 42px;
+    height: 42px;
+    border-radius: 50%;
+    background-color: var(--azul);
+    color: var(--branco);
     display: flex;
     align-items: center;
     justify-content: center;
-    font-weight: 800;
-    font-size: 1.15rem;
-    border: 2px solid rgba(255, 255, 255, 0.5);
-    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.18);
+    font-weight: 700;
+    font-size: 1.05rem;
     flex-shrink: 0;
 }
 
-/* Dropdown principal */
+/* ---------- Menu do usuário (dropdown) ---------- */
 .menu_usuario_dropdown {
     display: none;
     position: absolute;
     right: 0;
     top: calc(100% + 10px);
     width: 290px;
-    background: #ffffff;
+    background: var(--branco);
     border-radius: 8px;
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
-    border: 1px solid #e2e8f0;
+    box-shadow: 0 10px 30px rgba(27, 31, 51, 0.15);
+    border: 1px solid var(--borda);
     z-index: 1000;
 }
 
 .menu_usuario_dropdown.aberto {
     display: block;
-    animation: surgimentoMenu 0.15s ease-out;
-}
-
-@keyframes surgimentoMenu {
-    from {
-        opacity: 0;
-        transform: translateY(-6px);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
 }
 
 .menu_usuario_seta {
@@ -224,20 +342,21 @@ body {
     right: 22px;
     width: 12px;
     height: 12px;
-    background: #ffffff;
+    background: var(--branco);
     transform: rotate(45deg);
-    border-top: 1px solid #e2e8f0;
-    border-left: 1px solid #e2e8f0;
+    border-top: 1px solid var(--borda);
+    border-left: 1px solid var(--borda);
 }
 
-.menu_usuario_header {
+.menu_usuario_header,
+.flyout_header {
     padding: 14px 18px 8px;
     font-size: 0.72rem;
     font-weight: 700;
-    color: #64748b;
+    color: var(--texto_fraco);
     letter-spacing: 0.6px;
     text-transform: uppercase;
-    border-bottom: 1px solid #f1f5f9;
+    border-bottom: 1px solid var(--borda);
 }
 
 .menu_usuario_lista {
@@ -258,23 +377,23 @@ body {
     padding: 10px 18px;
     background: transparent;
     border: none;
-    color: #1e293b;
+    color: var(--texto);
+    font-family: inherit;
     font-size: 0.9rem;
     font-weight: 500;
     text-decoration: none;
     cursor: pointer;
     text-align: left;
-    transition: background 0.15s ease, color 0.15s ease;
 }
 
 .menu_item_btn:hover:not(:disabled) {
-    background-color: #f8fafc;
-    color: #001dbe;
+    background-color: var(--fundo);
+    color: var(--azul);
 }
 
 .menu_item_btn:disabled {
     cursor: default;
-    color: #475569;
+    color: var(--texto_fraco);
 }
 
 .menu_item_info {
@@ -300,37 +419,37 @@ body {
 
 .menu_chevron {
     font-size: 1.15rem;
-    color: #94a3b8;
+    color: var(--texto_claro);
     font-weight: 700;
     line-height: 1;
 }
 
 .menu_divisor {
     height: 1px;
-    background: #e2e8f0;
+    background: var(--borda);
     margin: 6px 0;
 }
 
 .link_logout {
-    color: #334155;
+    color: var(--texto);
 }
 
 .link_logout:hover {
-    background-color: #fef2f2 !important;
-    color: #dc2626 !important;
+    background-color: var(--vermelho_claro) !important;
+    color: var(--vermelho) !important;
 }
 
-/* Submenu de Perfis (Abre à esquerda) */
+/* submenu de perfis (abre pra esquerda) */
 .flyout_perfis {
     display: none;
     position: absolute;
     right: calc(100% + 8px);
     top: 0;
     width: 230px;
-    background: #ffffff;
+    background: var(--branco);
     border-radius: 8px;
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
-    border: 1px solid #e2e8f0;
+    box-shadow: 0 10px 30px rgba(27, 31, 51, 0.15);
+    border: 1px solid var(--borda);
     z-index: 1002;
     overflow: hidden;
 }
@@ -338,17 +457,6 @@ body {
 li.menu_item_has_sub:hover > .flyout_perfis,
 .flyout_perfis.aberto {
     display: block;
-    animation: surgimentoMenu 0.15s ease-out;
-}
-
-.flyout_header {
-    padding: 12px 16px 8px;
-    font-size: 0.72rem;
-    font-weight: 700;
-    color: #64748b;
-    letter-spacing: 0.6px;
-    text-transform: uppercase;
-    border-bottom: 1px solid #f1f5f9;
 }
 
 .flyout_corpo {
@@ -367,28 +475,25 @@ li.menu_item_has_sub:hover > .flyout_perfis,
     padding: 9px 16px;
     background: transparent;
     border: none;
+    font-family: inherit;
     font-size: 0.9rem;
-    color: #334155;
+    color: var(--texto);
     cursor: pointer;
     text-align: left;
-    transition: background 0.15s ease, color 0.15s ease;
 }
 
 .opcao_perfil_btn:hover {
-    background-color: #f8fafc;
+    background-color: var(--fundo);
 }
 
+/* perfil em uso fica amarelo igual o menu */
 .opcao_perfil_btn.ativo {
-    color: #ca8a04;
+    background-color: var(--amarelo_claro);
+    color: var(--amarelo_texto);
     font-weight: 700;
-    background-color: #fefce8;
 }
 
-.opcao_perfil_btn.ativo .opcao_icone {
-    color: #eab308;
-}
-
-/* Painel de Seleção de Entidades (Abre à esquerda) */
+/* painel de troca de entidade (abre pra esquerda) */
 .flyout_entidades {
     display: none;
     position: absolute;
@@ -396,10 +501,10 @@ li.menu_item_has_sub:hover > .flyout_perfis,
     top: -50px;
     width: 380px;
     max-width: calc(100vw - 320px);
-    background: #ffffff;
+    background: var(--branco);
     border-radius: 8px;
-    box-shadow: 0 12px 35px rgba(0, 0, 0, 0.22);
-    border: 1px solid #e2e8f0;
+    box-shadow: 0 12px 35px rgba(27, 31, 51, 0.18);
+    border: 1px solid var(--borda);
     z-index: 1002;
     padding: 18px;
 }
@@ -407,24 +512,23 @@ li.menu_item_has_sub:hover > .flyout_perfis,
 li.menu_item_has_sub:hover > .flyout_entidades,
 .flyout_entidades.aberto {
     display: block;
-    animation: surgimentoMenu 0.15s ease-out;
 }
 
 .flyout_entidade_topo h4 {
     margin: 0 0 12px;
     font-size: 1.05rem;
     font-weight: 700;
-    color: #0f172a;
+    color: var(--texto);
 }
 
+/* dica azul em vez de rosa, pra ficar na paleta */
 .flyout_dica {
-    background: #fdf2f4;
-    border: 1px solid #fecdd3;
-    border-left: 4px solid #e11d48;
-    border-radius: 4px;
+    background: var(--azul_claro);
+    border-left: 4px solid var(--azul);
+    border-radius: 6px;
     padding: 10px 14px;
     font-size: 0.82rem;
-    color: #881337;
+    color: var(--texto);
     line-height: 1.45;
     margin-bottom: 14px;
     display: flex;
@@ -439,18 +543,17 @@ li.menu_item_has_sub:hover > .flyout_entidades,
 
 .input_busca_entidade {
     width: 100%;
-    box-sizing: border-box;
     padding: 9px 34px 9px 12px;
-    border: 1px solid #cbd5e1;
+    border: 1px solid var(--borda_campo);
     border-radius: 6px;
+    font-family: inherit;
     font-size: 0.88rem;
     outline: none;
-    transition: border-color 0.2s, box-shadow 0.2s;
 }
 
 .input_busca_entidade:focus {
-    border-color: #001dbe;
-    box-shadow: 0 0 0 3px rgba(0, 29, 190, 0.15);
+    border-color: var(--azul);
+    box-shadow: 0 0 0 3px #d9e0ff;
 }
 
 .btn_busca_limpar {
@@ -462,13 +565,13 @@ li.menu_item_has_sub:hover > .flyout_entidades,
     border: none;
     font-size: 1.2rem;
     line-height: 1;
-    color: #94a3b8;
+    color: var(--texto_claro);
     cursor: pointer;
     padding: 4px;
 }
 
 .btn_busca_limpar:hover {
-    color: #475569;
+    color: var(--texto);
 }
 
 .flyout_lista_entidades {
@@ -490,40 +593,41 @@ li.menu_item_has_sub:hover > .flyout_entidades,
     align-items: center;
     gap: 10px;
     padding: 8px 12px;
-    border-radius: 5px;
+    border-radius: 6px;
     background: transparent;
     border: 1px solid transparent;
+    font-family: inherit;
     font-size: 0.88rem;
-    color: #1e293b;
+    color: var(--texto);
     cursor: pointer;
     text-align: left;
-    transition: all 0.15s ease;
 }
 
 .item_entidade_btn:hover {
-    background-color: #f1f5f9;
-    border-color: #e2e8f0;
+    background-color: var(--fundo);
+    border-color: var(--borda);
 }
 
 .item_entidade_btn.ativo {
-    background-color: #bae6fd;
-    color: #0369a1;
+    background-color: var(--azul_claro);
+    color: var(--azul);
     font-weight: 700;
-    border-color: #7dd3fc;
+    border-color: #c9d2ff;
 }
 
 .item_entidade_global {
     font-weight: 600;
-    border-bottom: 1px dashed #cbd5e1;
+    border-bottom: 1px dashed var(--borda_campo);
     margin-bottom: 4px;
     padding-bottom: 10px;
 }
 
-/* ---------- Conteúdo Base ---------- */
+/* ---------- Conteúdo ---------- */
 .principal {
     padding: 30px 40px;
 }
 
+/* titulo da pagina + botões na direita */
 .topo_pagina {
     display: flex;
     justify-content: space-between;
@@ -534,150 +638,712 @@ li.menu_item_has_sub:hover > .flyout_entidades,
 
 .topo_pagina h2 {
     margin: 0 0 4px;
+    font-size: 1.5rem;
+}
+
+/* grupo de botões na direita do titulo */
+.topo_pagina > div + div {
+    display: flex;
+    flex-shrink: 0;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    gap: 10px;
 }
 
 .topo_pagina p {
     margin: 0;
-    color: #666;
+    color: var(--texto_fraco);
     font-size: 0.9rem;
 }
 
-/* ---------- Badges de Status ---------- */
-.status_ativo {
-    display: inline-block;
-    padding: 2px 8px;
-    border-radius: 3px;
-    font-size: 0.8rem;
-    font-weight: bold;
-    background-color: #e3f4e8;
-    color: #2e7d4f;
+/* titulo de uma parte da tela (Itens Solicitados, Histórico, etc) */
+.titulo_secao {
+    margin: 0 0 15px;
+    font-size: 1.1rem;
+    color: var(--texto);
 }
 
-.status_inativo {
-    display: inline-block;
-    padding: 2px 8px;
-    border-radius: 3px;
-    font-size: 0.8rem;
-    font-weight: bold;
-    background-color: #e0e0e0;
-    color: #555;
+/* caixa branca padrão */
+.caixa {
+    background-color: var(--branco);
+    border: 1px solid var(--borda);
+    border-radius: 8px;
+    padding: 20px;
+    overflow-x: auto;
 }
 
-/* ---------- Botão Perigo / Excluir ---------- */
-.botao_perigo {
-    padding: 8px 16px;
-    background-color: #d32f2f;
-    color: #ffffff;
-    border: 1px solid #d32f2f;
-    font-size: 0.9rem;
-    font-weight: bold;
-    cursor: pointer;
-    border-radius: 2px;
-    display: inline-block;
-}
-
-.botao_perigo:hover {
-    background-color: #b71c1c;
-}
-
-.btn_link_perigo {
-    background: none;
-    border: none;
-    color: #d32f2f;
-    font-size: 0.85rem;
-    cursor: pointer;
-    text-decoration: underline;
-    padding: 0;
-    font-family: inherit;
-}
-
-.btn_link_perigo:hover {
-    color: #9a0007;
-}
-
-/* ---------- Mensagens Flash / Alertas ---------- */
-.flash_messages {
-    margin-bottom: 20px;
-}
-
-.alerta {
+/* caixa de destaque com borda na esquerda (observação, justificativa) */
+.aviso_caixa {
+    background-color: var(--branco);
+    border: 1px solid var(--borda);
+    border-left: 4px solid var(--azul);
+    border-radius: 8px;
     padding: 12px 16px;
-    border-radius: 4px;
+    margin-bottom: 25px;
+}
+
+.aviso_caixa.vermelho {
+    background-color: var(--vermelho_claro);
+    border-color: #f5c2c0;
+    border-left-color: var(--vermelho);
+}
+
+/* ---------- Cards de resumo ---------- */
+/* todas as telas usam o mesmo card, so muda a cor da borda */
+.resumo,
+.resumo_estoque,
+.resumo_pedidos,
+.resumo_solicitacoes {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+    gap: 15px;
+    margin-bottom: 25px;
+}
+
+.card_resumo,
+.card_estoque,
+.card_pedido_stat,
+.card_solicitacao_stat {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    padding: 16px 18px;
+    background-color: var(--branco);
+    border: 1px solid var(--borda);
+    border-left: 4px solid var(--azul);
+    border-radius: 8px;
+}
+
+.card_resumo strong,
+.card_estoque strong,
+.card_pedido_stat strong,
+.card_solicitacao_stat strong {
+    font-size: 1.6rem;
+    line-height: 1.2;
+    color: var(--texto);
+}
+
+.card_resumo span,
+.card_estoque span,
+.card_pedido_stat span,
+.card_solicitacao_stat span {
+    font-size: 0.85rem;
+    color: var(--texto_fraco);
+}
+
+/* cores da borda dos cards */
+.azul { border-left-color: var(--azul); }
+.verde { border-left-color: var(--verde); }
+.amarelo { border-left-color: var(--amarelo); }
+.vermelho { border-left-color: var(--vermelho); }
+.cinza { border-left-color: var(--texto_claro); }
+
+/* card de informação (Solicitante, Entidade...) sem borda colorida */
+.card_info {
+    border-left-color: var(--borda);
+}
+
+.card_info strong {
+    font-size: 1.1rem;
+}
+
+/* ---------- Filtros ---------- */
+.filtros {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-end;
+    gap: 15px;
+    margin-bottom: 24px;
+    padding: 16px 18px;
+    background-color: var(--branco);
+    border: 1px solid var(--borda);
+    border-radius: 8px;
+    font-size: 0.85rem;
+}
+
+.filtros label {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    font-weight: 600;
+}
+
+.filtros .check {
+    flex-direction: row;
+    align-items: center;
+    padding-bottom: 10px;
+    font-weight: normal;
+}
+
+/* ---------- Campos (vale pra todos os formulários) ---------- */
+.principal input[type="text"],
+.principal input[type="email"],
+.principal input[type="password"],
+.principal input[type="number"],
+.principal input[type="date"],
+.principal select,
+.principal textarea {
+    padding: 8px 10px;
+    border: 1px solid var(--borda_campo);
+    border-radius: 6px;
+    background-color: var(--branco);
+    color: var(--texto);
+    font-family: inherit;
     font-size: 0.9rem;
-    font-weight: 500;
-    margin-bottom: 10px;
 }
 
-.alerta_sucesso {
-    background-color: #e8f5e9;
-    color: #1b5e20;
-    border-left: 4px solid #2e7d32;
+.principal input:focus,
+.principal select:focus,
+.principal textarea:focus {
+    outline: none;
+    border-color: var(--azul);
+    box-shadow: 0 0 0 3px #d9e0ff;
 }
 
-.alerta_erro {
-    background-color: #ffebee;
-    color: #b71c1c;
-    border-left: 4px solid #c62828;
+.principal textarea {
+    resize: vertical;
 }
 
-.alerta_aviso {
-    background-color: #fff8e1;
-    color: #b78103;
-    border-left: 4px solid #fbc02d;
+/* ---------- Tabelas ---------- */
+.box_tabela {
+    overflow-x: auto;
 }
 
-/* ---------- Ordenação de Tabelas ---------- */
+.tabela {
+    width: 100%;
+    border-collapse: collapse;
+    background-color: var(--branco);
+    border: 1px solid var(--borda);
+    border-radius: 8px;
+    font-size: 0.9rem;
+}
+
+.tabela th,
+.tabela td {
+    padding: 11px 14px;
+    text-align: left;
+    border-bottom: 1px solid var(--borda);
+}
+
+/* cabeçalho nao quebra linha, celula quebra se precisar
+   (antes cortava o e-mail e o status na direita) */
+.tabela th,
+.tabela td:last-child {
+    white-space: nowrap;
+}
+
+.tabela th {
+    background-color: var(--fundo);
+    color: var(--texto_fraco);
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+}
+
+.tabela tbody tr:hover {
+    background-color: #f8f9fd;
+}
+
+/* link dentro da tabela vira link de ação */
+.tabela td a {
+    color: var(--azul);
+    font-weight: 600;
+    text-decoration: none;
+}
+
+.tabela td a:hover {
+    text-decoration: underline;
+}
+
+/* ordenar clicando no cabeçalho */
 th[data-tipo] {
     cursor: pointer;
     user-select: none;
-    position: relative;
-    padding-right: 18px !important;
 }
 
 th[data-tipo]:hover {
-    background-color: #e6ebfa;
+    background-color: #e9edf7;
 }
 
 th[data-tipo]::after {
     content: " ↕";
-    font-size: 0.75rem;
-    color: #888;
+    color: var(--texto_claro);
 }
 
 th[data-tipo].asc::after {
     content: " ▲";
-    color: #001dbe;
+    color: var(--azul);
 }
 
 th[data-tipo].desc::after {
     content: " ▼";
-    color: #001dbe;
+    color: var(--azul);
 }
 
-/* ---------- Badges Globais de Status de Estoque & Solicitações ---------- */
-.badge {
+/* espaço entre Editar e Excluir */
+.tabela td form.inline {
+    margin-left: 8px;
+}
+
+/* texto de tabela vazia */
+.vazio {
+    padding: 14px;
+    color: var(--texto_fraco);
+    font-style: italic;
+}
+
+/* ---------- Formulários ---------- */
+/* forms de suprimento e de admin usam a mesma regra */
+.secoes {
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+    gap: 24px;
+    align-items: start;
+}
+
+.secao,
+.secao_admin {
+    padding: 20px;
+    background-color: var(--branco);
+    border: 1px solid var(--borda);
+    border-radius: 8px;
+}
+
+/* largura dos formulários de uma coluna so */
+.secao_admin,
+.form_estreito {
+    max-width: 860px;
+}
+
+.secao h3,
+.secao_admin h3 {
+    margin: 0 0 16px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid var(--borda);
+    font-size: 1rem;
+}
+
+.campos,
+.campos_admin {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+}
+
+.campo,
+.campo_admin {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    font-size: 0.85rem;
+    font-weight: 600;
+}
+
+.campo.largo,
+.campo_admin.largo {
+    grid-column: 1 / -1;
+}
+
+.campo input,
+.campo select,
+.campo textarea,
+.campo_admin input,
+.campo_admin select,
+.campo_admin textarea {
+    width: 100%;
+    font-weight: normal;
+}
+
+/* checkbox nao estica (lista de perfis) */
+.campo input[type="checkbox"],
+.campo_admin input[type="checkbox"] {
+    width: auto;
+    margin-top: 2px;
+}
+
+.campo small,
+.campo_admin small {
+    font-weight: normal;
+    color: var(--texto_fraco);
+}
+
+.obrigatorio {
+    color: var(--vermelho);
+}
+
+/* botões no final do formulário */
+.acoes,
+.acoes_admin {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    margin-top: 24px;
+    padding-top: 20px;
+    border-top: 1px solid var(--borda);
+}
+
+.acoes_admin {
+    max-width: 860px;
+}
+
+.acoes .botao,
+.acoes_admin .botao {
+    min-width: 120px;
+}
+
+/* ---------- Mensagens ---------- */
+.flash_messages {
+    margin-bottom: 20px;
+}
+
+.alerta,
+.erros {
+    padding: 12px 16px;
+    border-radius: 8px;
+    font-size: 0.9rem;
+    font-weight: 500;
+    margin-bottom: 10px;
+    border-left: 4px solid;
+}
+
+.erros {
+    padding-left: 32px;
+    margin-bottom: 20px;
+}
+
+.alerta_sucesso {
+    background-color: var(--verde_claro);
+    color: var(--verde);
+    border-left-color: var(--verde);
+}
+
+.alerta_erro,
+.erros {
+    background-color: var(--vermelho_claro);
+    color: var(--vermelho);
+    border-left-color: var(--vermelho);
+}
+
+.alerta_aviso,
+.alerta_alerta {
+    background-color: var(--amarelo_claro);
+    color: var(--amarelo_texto);
+    border-left-color: var(--amarelo);
+}
+
+/* ---------- Badges (etiquetas de status) ---------- */
+/* todas as etiquetas do sistema seguem essas 5 cores */
+.badge,
+.status,
+.estoque,
+.status_ativo,
+.status_inativo,
+.saldo_tag,
+.tipo_mov_badge,
+.status_pedido_badge {
     display: inline-block;
-    padding: 3px 8px;
-    border-radius: 12px;
+    padding: 3px 10px;
+    border-radius: 20px;
     font-size: 0.78rem;
-    font-weight: bold;
+    font-weight: 600;
+    text-align: center;
+    white-space: nowrap;
+}
+
+/* verde = deu certo / ok */
+.badge_verde,
+.status_ativo,
+.estoque_ok,
+.saldo_normal,
+.tipo_entrada,
+.badge_entregue,
+.status_recebido {
+    background-color: var(--verde_claro);
+    color: var(--verde);
+}
+
+/* amarelo = esperando alguém */
+.badge_amarelo,
+.badge_alerta,
+.saldo_critico,
+.tipo_ajuste,
+.badge_solicitada,
+.badge_em_validacao,
+.badge_aguardando_estoque,
+.status_aguardando_cotacao {
+    background-color: var(--amarelo_claro);
+    color: var(--amarelo_texto);
+}
+
+/* azul = andando no fluxo */
+.badge_azul,
+.badge_roxo,
+.badge_aprovada,
+.badge_separada,
+.status_pedido_realizado,
+.status_parcialmente_recebido {
+    background-color: var(--azul_claro);
+    color: var(--azul);
+}
+
+/* vermelho = problema */
+.badge_vermelho,
+.estoque_critico,
+.saldo_zerado,
+.tipo_saida,
+.badge_rejeitada {
+    background-color: var(--vermelho_claro);
+    color: var(--vermelho);
+}
+
+/* cinza = parado / cancelado */
+.badge_cinza,
+.status_inativo,
+.badge_cancelada,
+.status_em_montagem,
+.status_cancelado {
+    background-color: var(--cinza_claro);
+    color: var(--cinza);
+}
+
+/* ---------- Classes de apoio ---------- */
+/* usadas no lugar dos style="" que tinham nos html */
+.centro { text-align: center; }
+.direita { text-align: right; }
+.negrito { font-weight: 700; }
+.nowrap { white-space: nowrap; }
+.bloco { display: block; }
+.inline { display: inline; }
+.largura_total { width: 100%; }
+.sem_margem { margin: 0; }
+
+.texto_fraco { color: var(--texto_fraco); }
+.texto_claro { color: var(--texto_claro); }
+.texto_azul { color: var(--azul); }
+.texto_verde { color: var(--verde); }
+.texto_vermelho { color: var(--vermelho); }
+.texto_amarelo { color: var(--amarelo_texto); }
+
+.texto_mini { font-size: 0.78rem; }
+.texto_pequeno { font-size: 0.85rem; }
+.texto_grande { font-size: 1.1rem; }
+.texto_destaque { font-size: 1.6rem; font-weight: 700; }
+
+/* rotulo pequeno em maiusculas (SOLICITANTE, ENTIDADE...) */
+.rotulo {
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+    color: var(--texto_claro);
+}
+
+/* linha com itens lado a lado */
+.linha {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.linha_entre {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 15px;
+    flex-wrap: wrap;
+}
+
+.linha_fim {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+}
+
+/* grade de cards de informação */
+.grade_info {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 15px;
+    margin-bottom: 25px;
+}
+
+.mt_pequeno { margin-top: 6px; }
+.mt_grande { margin-top: 20px; }
+.mb_mini { margin-bottom: 4px; }
+.mb_medio { margin-bottom: 15px; }
+.mb_grande { margin-bottom: 30px; }
+
+/* linhas de separação */
+.divisor_baixo { border-bottom: 1px solid var(--borda); padding-bottom: 10px; }
+.divisor_topo { border-top: 1px solid var(--borda); padding-top: 15px; }
+.divisor_esquerda { border-left: 1px solid var(--borda); padding-left: 25px; }
+.divisor_azul { border-bottom: 2px solid var(--azul); padding-bottom: 12px; }
+
+/* numero do chamado (#12) em etiqueta */
+.tag_chamado {
+    display: inline-block;
+    margin-right: 4px;
+    padding: 2px 8px;
+    border-radius: 20px;
+    background: var(--azul_claro);
+    color: var(--azul);
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-decoration: none;
+}
+
+/* caixa de "nada pra fazer" */
+.estado_vazio {
+    padding: 50px 20px;
     text-align: center;
 }
 
-.badge_verde { background-color: #e8f5e9; color: #2e7d32; }
-.badge_amarelo { background-color: #fff8e1; color: #b78103; }
-.badge_vermelho { background-color: #ffebee; color: #c62828; }
-.badge_azul { background-color: #e3f2fd; color: #1565c0; }
-.badge_cinza { background-color: #f5f5f5; color: #616161; }
-.badge_roxo { background-color: #ede7f6; color: #512da8; }
+/* tabela dentro de card, sem borda propria */
+.tabela_sem_borda {
+    border: none;
+    border-radius: 0;
+}
 
-/* Status da Solicitação */
-.badge_solicitada { background-color: #e3f2fd; color: #0d47a1; }
-.badge_em_validacao { background-color: #fff8e1; color: #f57f17; }
-.badge_aprovada { background-color: #e8f5e9; color: #1b5e20; }
-.badge_rejeitada { background-color: #ffebee; color: #b71c1c; }
-.badge_aguardando_estoque { background-color: #fff3e0; color: #e65100; }
-.badge_separada { background-color: #ede7f6; color: #4a148c; }
-.badge_entregue { background-color: #e0f2f1; color: #004d40; }
-.badge_cancelada { background-color: #eceff1; color: #455a64; }
+/* campo numerico pequeno dentro de tabela */
+.principal input.input_mini {
+    width: 80px;
+    padding: 5px;
+}
 
+/* campo que nao pode editar */
+.principal input.campo_bloqueado {
+    background-color: var(--fundo);
+    color: var(--texto_fraco);
+    cursor: not-allowed;
+}
+
+/* form numa linha so (suprimento | qtd | botao) */
+.form_linha {
+    display: grid;
+    grid-template-columns: 2fr 1fr auto;
+    gap: 12px;
+    align-items: end;
+}
+
+/* empurra o botao pra alinhar com os campos que tem rotulo */
+.alinha_campo {
+    padding-top: 18px;
+}
+
+/* lista de perfis com checkbox (cadastro de usuario) */
+.grade_perfis {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 10px;
+}
+
+.opcao_check {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 12px;
+    background: var(--branco);
+    border: 1px solid var(--borda);
+    border-radius: 8px;
+    cursor: pointer;
+}
+
+.opcao_check:hover {
+    border-color: var(--azul);
+}
+
+/* janela (dialog) de rejeitar / separar */
+.modal {
+    width: 90%;
+    max-width: 500px;
+    padding: 25px;
+    border: 1px solid var(--borda);
+    border-radius: 12px;
+    box-shadow: 0 10px 30px rgba(27, 31, 51, 0.2);
+    font-family: inherit;
+    color: var(--texto);
+}
+
+.modal_largo {
+    max-width: 650px;
+}
+
+.modal::backdrop {
+    background: rgba(27, 31, 51, 0.4);
+}
+
+/* ---------- Celular ---------- */
+@media (max-width: 900px) {
+    body {
+        flex-direction: column;
+    }
+
+    .navegador {
+        width: 100%;
+    }
+
+    .titulo {
+        height: 56px;
+    }
+
+    /* menu vira uma faixa que rola pro lado */
+    .box_lista {
+        display: flex;
+        overflow-x: auto;
+        margin: 0;
+        padding: 0 8px 10px;
+    }
+
+    .lista {
+        margin: 0;
+    }
+
+    .lista_divisor {
+        display: none;
+    }
+
+    .navegador .botao {
+        margin: 0 4px;
+        white-space: nowrap;
+    }
+
+    .cabecalho {
+        padding: 0 12px;
+    }
+
+    .principal {
+        padding: 20px 16px;
+    }
+
+    .topo_pagina {
+        flex-direction: column;
+    }
+
+    .secoes,
+    .campos,
+    .campos_admin,
+    .form_linha {
+        grid-template-columns: 1fr;
+    }
+
+    .flyout_entidades,
+    .flyout_perfis {
+        right: 0;
+        top: 100%;
+        max-width: 90vw;
+    }
+}
+
+/* ---------- Impressão (relatório consolidado) ---------- */
+@media print {
+    .navegador,
+    .cabecalho,
+    .nao_imprimir {
+        display: none !important;
+    }
+
+    body {
+        background: #ffffff;
+    }
+}

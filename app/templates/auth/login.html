@@ -5,14 +5,17 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Estok - Acessar o Sistema</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/login.css') }}">
+    <link rel="icon" href="{{ url_for('static', filename='img/estok-icone-app.png') }}">
 </head>
 
 <body>
     <div class="login_container">
         <div class="login_card">
             <div class="login_topo">
-                <span class="login_logo">Estok</span>
+                <img class="login_logo" src="{{ url_for('static', filename='img/estok-logo.svg') }}" alt="Estok">
                 <h2>Gestão de Recursos</h2>
                 <p>Identifique-se para acessar o ambiente</p>
             </div>

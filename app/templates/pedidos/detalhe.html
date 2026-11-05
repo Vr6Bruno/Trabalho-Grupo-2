@@ -11,30 +11,30 @@
 
 {% block content %}
 <div class="topo_pagina">
-    <div style="display: flex; align-items: center; gap: 15px; flex-wrap: wrap;">
-        <h2 style="margin: 0;">Pedido de Compra #{{ pedido.id }} — {{ pedido.nome }}</h2>
+    <div class="linha">
+        <h2 class="sem_margem">Pedido de Compra #{{ pedido.id }} — {{ pedido.nome }}</h2>
         <span class="status_pedido_badge status_{{ pedido.status }}">
             {{ pedido.status|replace('_', ' ')|title }}
         </span>
     </div>
-    <div style="display: flex; gap: 10px;">
+    <div class="linha">
         <a class="botao botao_destaque" href="{{ url_for('pedidos.lista') }}">← Voltar</a>
-        <a class="botao botao_destaque" href="{{ url_for('solicitacoes.compilado') }}">📦 Compilado Operacional</a>
+        <a class="botao botao_destaque" href="{{ url_for('solicitacoes.compilado') }}">Compilado Operacional</a>
     </div>
 </div>
 
 <div class="grade_pedido_detalhe">
     <!-- COLUNA ESQUERDA: STATUS E METADADOS -->
     <div>
-        <div style="background: #fff; border: 1px solid #ddd; border-radius: 4px; padding: 20px; margin-bottom: 20px;">
-            <h3 style="margin-top: 0; margin-bottom: 15px; font-size: 1.1rem; border-bottom: 1px solid #eee; padding-bottom: 8px;">
+        <div class="caixa mb_medio">
+            <h3 class="titulo_secao">
                 Status do Pedido
             </h3>
 
             <form action="{{ url_for('pedidos.atualizar_status', id=pedido.id) }}" method="post">
-                <label style="display: block; margin-bottom: 15px;">
-                    <span style="font-weight: bold; font-size: 0.85rem; display: block; margin-bottom: 4px;">Status</span>
-                    <select name="status" style="width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 3px;">
+                <label class="bloco mb_medio">
+                    <span class="negrito texto_pequeno bloco mb_mini">Status</span>
+                    <select class="largura_total" name="status">
                         <option value="em_montagem" {{ 'selected' if pedido.status == 'em_montagem' }}>Em montagem</option>
                         <option value="aguardando_cotacao" {{ 'selected' if pedido.status == 'aguardando_cotacao' }}>Aguardando cotação</option>
                         <option value="pedido_realizado" {{ 'selected' if pedido.status == 'pedido_realizado' }}>Pedido realizado</option>
@@ -42,58 +42,58 @@
                         <option value="recebido" {{ 'selected' if pedido.status == 'recebido' }}>Recebido</option>
                         <option value="cancelado" {{ 'selected' if pedido.status == 'cancelado' }}>Cancelado</option>
                     </select>
-                    <small style="color: #666; font-size: 0.78rem; display: block; margin-top: 4px;">
+                    <small class="texto_fraco texto_mini bloco mt_pequeno">
                         Ao marcar como <strong>Pedido realizado</strong>, o campo de recebimento dos itens é liberado.
                     </small>
                 </label>
 
-                <label style="display: block; margin-bottom: 15px;">
-                    <span style="font-weight: bold; font-size: 0.85rem; display: block; margin-bottom: 4px;">Observações</span>
-                    <textarea name="observacao" rows="3" style="width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 3px; font-family: inherit;">{{ pedido.observacao or '' }}</textarea>
+                <label class="bloco mb_medio">
+                    <span class="negrito texto_pequeno bloco mb_mini">Observações</span>
+                    <textarea class="largura_total" name="observacao" rows="3">{{ pedido.observacao or '' }}</textarea>
                 </label>
 
                 {% if pode_gerenciar %}
-                <button type="submit" class="botao botao_primario" style="width: 100%;">Atualizar Status</button>
+                <button type="submit" class="botao botao_primario largura_total">Atualizar Status</button>
                 {% endif %}
             </form>
         </div>
 
-        <div style="background: #fff; border: 1px solid #ddd; border-radius: 4px; padding: 20px;">
-            <div style="margin-bottom: 12px;">
-                <span style="font-size: 0.75rem; text-transform: uppercase; color: #888; font-weight: bold;">Criado por</span>
-                <div style="font-weight: bold; font-size: 0.95rem;">{{ pedido.usuario_nome }}</div>
+        <div class="caixa">
+            <div class="mb_medio">
+                <span class="texto_mini rotulo texto_claro negrito">Criado por</span>
+                <div class="negrito">{{ pedido.usuario_nome }}</div>
             </div>
-            <div style="margin-bottom: 12px;">
-                <span style="font-size: 0.75rem; text-transform: uppercase; color: #888; font-weight: bold;">Entidade</span>
-                <div style="font-weight: bold; font-size: 0.95rem;">{{ pedido.entidade_nome }}</div>
+            <div class="mb_medio">
+                <span class="texto_mini rotulo texto_claro negrito">Entidade</span>
+                <div class="negrito">{{ pedido.entidade_nome }}</div>
             </div>
             <div>
-                <span style="font-size: 0.75rem; text-transform: uppercase; color: #888; font-weight: bold;">Data de Criação</span>
-                <div style="font-size: 0.9rem; color: #555;">{{ pedido.criado_em.strftime('%d/%m/%Y às %H:%M') if pedido.criado_em else '-' }}</div>
+                <span class="texto_mini rotulo texto_claro negrito">Data de Criação</span>
+                <div class="texto_pequeno texto_fraco">{{ pedido.criado_em.strftime('%d/%m/%Y às %H:%M') if pedido.criado_em else '-' }}</div>
             </div>
         </div>
     </div>
 
     <!-- COLUNA DIREITA: ITENS DO PEDIDO E RECEBIMENTO -->
     <div>
-        <div class="box_tabela" style="margin: 0 0 25px; background: #fff; border: 1px solid #ddd; border-radius: 4px; padding: 20px;">
-            <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #eee; padding-bottom: 10px; margin-bottom: 15px;">
-                <h3 style="margin: 0; font-size: 1.15rem; color: #333;">Itens do Pedido</h3>
-                <span style="font-size: 0.85rem; color: #666;">{{ itens|length }} item(ns)</span>
+        <div class="box_tabela caixa mb_grande">
+            <div class="linha_entre mb_medio divisor_baixo">
+                <h3 class="titulo_secao sem_margem">Itens do Pedido</h3>
+                <span class="texto_pequeno texto_fraco">{{ itens|length }} item(ns)</span>
             </div>
 
             <table class="tabela">
                 <thead>
                     <tr>
                         <th>Suprimento</th>
-                        <th style="text-align: center;">Necessário</th>
-                        <th style="text-align: center;">Pedido</th>
-                        <th style="text-align: center;">Recebido</th>
+                        <th class="centro">Necessário</th>
+                        <th class="centro">Pedido</th>
+                        <th class="centro">Recebido</th>
                         {% if pedido.status in ['pedido_realizado', 'parcialmente_recebido'] and pode_gerenciar %}
-                        <th style="text-align: center;">Registrar Recebimento</th>
+                        <th class="centro">Registrar Recebimento</th>
                         {% endif %}
                         {% if pedido.status == 'em_montagem' and pode_gerenciar %}
-                        <th style="text-align: center;">Remover</th>
+                        <th class="centro">Remover</th>
                         {% endif %}
                     </tr>
                 </thead>
@@ -102,46 +102,46 @@
                     <tr>
                         <td>
                             <strong>{{ it.suprimento_nome }}</strong>
-                            <br><small style="color: #666;">{{ it.unidade_medida or 'un' }} (Estoque atual: {{ it.estoque_atual }})</small>
+                            <br><small class="texto_fraco">{{ it.unidade_medida or 'un' }} (Estoque atual: {{ it.estoque_atual }})</small>
                             {% if it.observacao %}
-                            <br><small style="color: #888; font-style: italic;">{{ it.observacao }}</small>
+                            <br><small class="texto_claro">{{ it.observacao }}</small>
                             {% endif %}
                         </td>
-                        <td style="text-align: center; font-weight: bold;">{{ it.quantidade_necessaria }}</td>
-                        <td style="text-align: center;">
+                        <td class="centro negrito">{{ it.quantidade_necessaria }}</td>
+                        <td class="centro">
                             {% if it.quantidade_pedida > 0 %}
                             <strong>{{ it.quantidade_pedida }}</strong>
                             {% else %}
-                            <span style="color: #888;">—</span>
+                            <span class="texto_claro">—</span>
                             {% endif %}
                         </td>
-                        <td style="text-align: center;">
+                        <td class="centro">
                             {% if it.quantidade_recebida >= it.meta_recebimento %}
                             <span class="badge badge_verde">✓ {{ it.quantidade_recebida }} un (Completo)</span>
                             {% elif it.quantidade_recebida > 0 %}
                             <span class="badge badge_amarelo">{{ it.quantidade_recebida }} un</span>
                             {% else %}
-                            <span style="color: #888;">0</span>
+                            <span class="texto_claro">0</span>
                             {% endif %}
                         </td>
 
                         {% if pedido.status in ['pedido_realizado', 'parcialmente_recebido'] and pode_gerenciar %}
-                        <td style="text-align: center;">
+                        <td class="centro">
                             {% if it.restante_receber > 0 %}
-                            <form action="{{ url_for('pedidos.receber_item', id=pedido.id, item_id=it.id) }}" method="post" style="display: flex; gap: 5px; justify-content: center; align-items: center;">
-                                <input type="number" name="qtd_recebida" min="1" max="{{ it.restante_receber }}" value="{{ it.restante_receber }}" style="width: 70px; padding: 4px; border: 1px solid #ccc; border-radius: 3px; text-align: center;" title="Restam {{ it.restante_receber }} un a receber">
-                                <button type="submit" class="botao botao_primario" style="background-color: #2e7d32; border-color: #2e7d32; padding: 4px 10px; font-size: 0.8rem;" title="Receber e dar entrada no estoque">
+                            <form class="linha" action="{{ url_for('pedidos.receber_item', id=pedido.id, item_id=it.id) }}" method="post">
+                                <input class="input_mini centro negrito" type="number" name="qtd_recebida" min="1" max="{{ it.restante_receber }}" value="{{ it.restante_receber }}" title="Restam {{ it.restante_receber }} un a receber">
+                                <button type="submit" class="botao botao_sucesso botao_pequeno" title="Receber e dar entrada no estoque">
                                     ✓ Receber
                                 </button>
                             </form>
                             {% else %}
-                            <span style="color: #2e7d32; font-weight: bold; font-size: 0.85rem;">Concluído</span>
+                            <span class="texto_verde negrito texto_pequeno">Concluído</span>
                             {% endif %}
                         </td>
                         {% endif %}
 
                         {% if pedido.status == 'em_montagem' and pode_gerenciar %}
-                        <td style="text-align: center;">
+                        <td class="centro">
                             <form action="{{ url_for('pedidos.remover_item', id=pedido.id, item_id=it.id) }}" method="post" onsubmit="return confirm('Remover item deste pedido?');">
                                 <button type="submit" class="btn_link_perigo" title="Remover item">✕</button>
                             </form>
@@ -159,14 +159,14 @@
 
         <!-- FORMULÁRIO PARA ADICIONAR NOVO ITEM AO PEDIDO -->
         {% if pedido.status in ['em_montagem', 'aguardando_cotacao'] and pode_gerenciar %}
-        <div style="background: #fff; border: 1px solid #ddd; border-radius: 4px; padding: 20px;">
-            <h4 style="margin-top: 0; margin-bottom: 15px; font-size: 1rem; color: #333;">
+        <div class="caixa">
+            <h4 class="titulo_secao">
                 + Adicionar Suprimento ao Pedido
             </h4>
-            <form action="{{ url_for('pedidos.adicionar_item', id=pedido.id) }}" method="post" style="display: grid; grid-template-columns: 2fr 1fr auto; gap: 12px; align-items: flex-end;">
+            <form action="{{ url_for('pedidos.adicionar_item', id=pedido.id) }}" method="post" class="form_linha">
                 <label>
-                    <span style="font-size: 0.8rem; font-weight: bold; display: block; margin-bottom: 3px;">Suprimento</span>
-                    <select name="suprimento_id" required style="width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 3px;">
+                    <span class="texto_mini negrito bloco mb_mini">Suprimento</span>
+                    <select class="largura_total" name="suprimento_id" required>
                         <option value="">Selecione um suprimento...</option>
                         {% for s in suprimentos %}
                         <option value="{{ s.id }}">{{ s.nome }} ({{ s.unidade_medida or 'un' }}) - Estoque atual: {{ s.estoque_atual }}</option>
@@ -175,11 +175,11 @@
                 </label>
 
                 <label>
-                    <span style="font-size: 0.8rem; font-weight: bold; display: block; margin-bottom: 3px;">Quantidade</span>
-                    <input type="number" name="quantidade" min="1" value="1" required style="width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 3px;">
+                    <span class="texto_mini negrito bloco mb_mini">Quantidade</span>
+                    <input class="largura_total" type="number" name="quantidade" min="1" value="1" required>
                 </label>
 
-                <button type="submit" class="botao botao_destaque" style="height: 38px;">Adicionar</button>
+                <button type="submit" class="botao botao_destaque">Adicionar</button>
             </form>
         </div>
         {% endif %}

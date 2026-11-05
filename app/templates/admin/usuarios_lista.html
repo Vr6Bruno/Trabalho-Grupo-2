@@ -14,7 +14,7 @@
         <h2>Gestão de Usuários</h2>
         <p>Cadastre operadores, gerentes e solicitantes vinculados a cada entidade.</p>
     </div>
-    <a class="botao botao_destaque" href="{{ url_for('admin.usuarios_novo') }}">+ Novo Usuário</a>
+    <a class="botao botao_primario" href="{{ url_for('admin.usuarios_novo') }}">+ Novo Usuário</a>
 </div>
 
 <!-- FILTROS -->
@@ -83,10 +83,10 @@
                     <span class="status_inativo">Inativo</span>
                     {% endif %}
                 </td>
-                <td style="white-space: nowrap;">
+                <td class="nowrap">
                     <a class="link_acao" href="{{ url_for('admin.usuarios_editar', id=u.id) }}">Editar</a>
                     {% if u.id != usuario_logado.id and (is_super_admin or u.perfil_codigo != 'SUPER_ADMIN') %}
-                    <form action="{{ url_for('admin.usuarios_excluir', id=u.id) }}" method="post" style="display: inline-block; margin-left: 8px;" onsubmit="return confirm('Tem certeza que deseja excluir/inativar o usuário {{ u.login }}?');">
+                    <form class="inline" action="{{ url_for('admin.usuarios_excluir', id=u.id) }}" method="post" onsubmit="return confirm('Tem certeza que deseja excluir/inativar o usuário {{ u.login }}?');">
                         <button type="submit" class="btn_link_perigo" title="Excluir usuário">Excluir</button>
                     </form>
                     {% endif %}

@@ -26,11 +26,11 @@
 </ul>
 {% endif %}
 
-<form class="formulario" method="post" style="max-width: 650px;">
+<form class="formulario form_estreito" method="post">
     {% if is_admin %}
-    <div class="secao" style="margin-bottom: 20px;">
+    <div class="secao mb_medio">
         <h3>Entidade</h3>
-        <p style="font-size: 0.85rem; color: #666; margin-top: -5px; margin-bottom: 12px;">
+        <p class="texto_pequeno texto_fraco mb_medio">
             Como Super-Admin, selecione a entidade para a qual este pedido de compra será gerado:
         </p>
         <div class="campos">
@@ -63,9 +63,9 @@
     </div>
 
     {% if suprimento_param %}
-    <div class="secao" style="margin-top: 20px;">
+    <div class="secao mt_grande">
         <h3>Item de Origem (Compilado Operacional)</h3>
-        <p style="font-size: 0.85rem; color: #666; margin-top: -5px; margin-bottom: 12px;">
+        <p class="texto_pequeno texto_fraco mb_medio">
             Este item será adicionado automaticamente ao novo pedido de compra.
         </p>
 
