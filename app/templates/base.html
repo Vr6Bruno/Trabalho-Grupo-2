@@ -5,14 +5,18 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>{% block title %}Estok{% endblock %}</title>
+    <!-- fonte inter do google fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/base.css') }}">
+    <link rel="icon" href="{{ url_for('static', filename='img/estok-icone-app.png') }}">
     {% block extra_css %}{% endblock %}
 </head>
 
 <body>
     <!-- MENU LATERAL -->
     <nav class="navegador">
-        <h1 class="titulo">Estok</h1>
+        <h1 class="titulo"><img src="{{ url_for('static', filename='img/estok-logo-negativo.svg') }}" alt="Estok"></h1>
         <ul class="box_lista">
             {# Solicitações: Visível para todos os perfis autenticados #}
             <li class="lista"><a class="botao {% block nav_solicitacoes_active %}{% endblock %}" href="{{ url_for('solicitacoes.lista') }}">Solicitações</a></li>

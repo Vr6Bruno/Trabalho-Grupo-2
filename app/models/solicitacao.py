@@ -197,19 +197,17 @@ def criar(entidade_id, solicitante_id, itens, observacao=None):
 def aprovar(id, validador_id, entidade_id=None):
     """Aprova a solicitação, liberando seus itens para separação operacional."""
     with conectar() as conn, conn.cursor() as cur:
-        cur.execute("SELECT status FROM solicitacao WHERE id = %s", (id,))
+        cur.execute("SELECT status, entidade_id FROM solicitacao WHERE id = %s", (id,))
         sol = cur.fetchone()
         if not sol:
             return False, "Solicitação não encontrada."
+        if entidade_id and sol["entidade_id"] != entidade_id:
+            return False, "Você não possui permissão para aprovar solicitações de outra entidade."
         if sol["status"] != "solicitada":
             return False, f"Apenas solicitações no estado 'Solicitada' podem ser aprovadas (estado atual: {sol['status']})."
 
         sql_up = "UPDATE solicitacao SET status = 'aprovada', validador_id = %s, data_validacao = NOW() WHERE id = %s"
-        params = [validador_id, id]
-        if entidade_id:
-            sql_up += " AND entidade_id = %s"
-            params.append(entidade_id)
-        cur.execute(sql_up, params)
+        cur.execute(sql_up, (validador_id, id))
 
         # Atualiza status dos itens pendentes para aprovado
         cur.execute("UPDATE item_solicitacao SET status = 'aprovado' WHERE solicitacao_id = %s AND status = 'pendente'", (id,))
@@ -229,10 +227,12 @@ def rejeitar(id, validador_id, justificativa, entidade_id=None):
         return False, "A justificativa de rejeição é obrigatória."
 
     with conectar() as conn, conn.cursor() as cur:
-        cur.execute("SELECT status FROM solicitacao WHERE id = %s", (id,))
+        cur.execute("SELECT status, entidade_id FROM solicitacao WHERE id = %s", (id,))
         sol = cur.fetchone()
         if not sol:
             return False, "Solicitação não encontrada."
+        if entidade_id and sol["entidade_id"] != entidade_id:
+            return False, "Você não possui permissão para rejeitar solicitações de outra entidade."
         if sol["status"] not in ("solicitada", "em_validacao"):
             return False, f"Esta solicitação não pode mais ser rejeitada (estado atual: {sol['status']})."
 
@@ -241,11 +241,7 @@ def rejeitar(id, validador_id, justificativa, entidade_id=None):
             SET status = 'rejeitada', justificativa_rejeicao = %s, validador_id = %s, data_validacao = NOW()
             WHERE id = %s
         """
-        params = [justificativa.strip(), validador_id, id]
-        if entidade_id:
-            sql_up += " AND entidade_id = %s"
-            params.append(entidade_id)
-        cur.execute(sql_up, params)
+        cur.execute(sql_up, (justificativa.strip(), validador_id, id))
 
         # Atualiza itens para cancelado
         cur.execute("UPDATE item_solicitacao SET status = 'cancelado' WHERE solicitacao_id = %s", (id,))
@@ -259,32 +255,70 @@ def rejeitar(id, validador_id, justificativa, entidade_id=None):
         return True, "Solicitação rejeitada com sucesso."
 
 
-def cancelar(id, usuario_id, motivo=None, entidade_id=None):
-    """Cancela uma solicitação antes de ser entregue."""
+def cancelar(id, usuario_id, motivo=None, entidade_id=None, usuario_perfil=None):
+    """Cancela uma solicitação antes de ser entregue e estorna itens se já houver separação física."""
     with conectar() as conn, conn.cursor() as cur:
-        cur.execute("SELECT status FROM solicitacao WHERE id = %s", (id,))
+        cur.execute("SELECT status, entidade_id, solicitante_id FROM solicitacao WHERE id = %s", (id,))
         sol = cur.fetchone()
         if not sol:
             return False, "Solicitação não encontrada."
+        if entidade_id and sol["entidade_id"] != entidade_id:
+            return False, "Você não possui permissão para cancelar solicitações de outra entidade."
+
+        if usuario_perfil == "SOLICITANTE":
+            if sol["solicitante_id"] != usuario_id:
+                return False, "Você só pode cancelar suas próprias solicitações."
+            if sol["status"] != "solicitada":
+                return False, "O solicitante só pode cancelar solicitações com status 'Solicitada'."
+
         if sol["status"] in ("entregue", "cancelada", "rejeitada"):
             return False, f"Solicitação já finalizada ({sol['status']}) e não pode ser cancelada."
 
+        # Se houver itens já separados/atendidos, estorna para o estoque
+        cur.execute("""
+            SELECT i.id, i.suprimento_id, i.quantidade_atendida, s.estoque_atual, s.entidade_id, s.nome AS suprimento_nome
+            FROM item_solicitacao i
+            INNER JOIN suprimento s ON s.id = i.suprimento_id
+            WHERE i.solicitacao_id = %s AND i.quantidade_atendida > 0
+        """, (id,))
+        itens_estorno = cur.fetchall()
+
+        for it in itens_estorno:
+            qtd_devolver = it["quantidade_atendida"]
+            novo_est = it["estoque_atual"] + qtd_devolver
+            cur.execute("UPDATE suprimento SET estoque_atual = %s WHERE id = %s", (novo_est, it["suprimento_id"]))
+            sql_mov = """
+                INSERT INTO movimentacao_estoque
+                    (entidade_id, suprimento_id, tipo, quantidade, quantidade_anterior, quantidade_posterior,
+                     solicitacao_id, usuario_id, observacao)
+                VALUES (%s, %s, 'entrada', %s, %s, %s, %s, %s, %s)
+            """
+            cur.execute(sql_mov, (
+                it["entidade_id"],
+                it["suprimento_id"],
+                qtd_devolver,
+                it["estoque_atual"],
+                novo_est,
+                id,
+                usuario_id,
+                f"Estorno de {qtd_devolver} un por cancelamento da Solicitação #{id}"
+            ))
+
         sql_up = "UPDATE solicitacao SET status = 'cancelada' WHERE id = %s"
-        params = [id]
-        if entidade_id:
-            sql_up += " AND entidade_id = %s"
-            params.append(entidade_id)
-        cur.execute(sql_up, params)
+        cur.execute(sql_up, (id,))
 
         cur.execute("UPDATE item_solicitacao SET status = 'cancelado' WHERE solicitacao_id = %s", (id,))
 
         desc = f"Solicitação cancelada. Motivo: {motivo.strip()}" if motivo else "Solicitação cancelada pelo usuário."
+        if itens_estorno:
+            desc += " (Itens separados foram devolvidos ao estoque)."
+
         cur.execute("""
             INSERT INTO historico_solicitacao (solicitacao_id, usuario_id, estado_anterior, estado_novo, descricao)
             VALUES (%s, %s, %s, 'cancelada', %s)
         """, (id, usuario_id, sol["status"], desc))
 
-        return True, "Solicitação cancelada."
+        return True, "Solicitação cancelada com sucesso."
 
 
 def separar_itens(solicitacao_id, itens_separar, operador_id, entidade_id=None):
@@ -300,6 +334,8 @@ def separar_itens(solicitacao_id, itens_separar, operador_id, entidade_id=None):
         sol = cur.fetchone()
         if not sol:
             return False, "Solicitação não encontrada."
+        if entidade_id and sol["entidade_id"] != entidade_id:
+            return False, "Você não possui permissão para separar solicitações de outra entidade."
         if sol["status"] not in ("aprovada", "aguardando_estoque"):
             return False, f"Esta solicitação não está pronta para separação (estado atual: {sol['status']})."
 
@@ -393,10 +429,12 @@ def separar_itens(solicitacao_id, itens_separar, operador_id, entidade_id=None):
 def entregar(id, entregador_id, entidade_id=None):
     """Conclui o atendimento da solicitação registrando a entrega ao solicitante."""
     with conectar() as conn, conn.cursor() as cur:
-        cur.execute("SELECT status FROM solicitacao WHERE id = %s", (id,))
+        cur.execute("SELECT status, entidade_id FROM solicitacao WHERE id = %s", (id,))
         sol = cur.fetchone()
         if not sol:
             return False, "Solicitação não encontrada."
+        if entidade_id and sol["entidade_id"] != entidade_id:
+            return False, "Você não possui permissão para registrar entrega em solicitações de outra entidade."
         if sol["status"] != "separada":
             return False, f"Apenas solicitações com status 'Separada' podem ser entregues (estado atual: {sol['status']})."
 
@@ -405,11 +443,7 @@ def entregar(id, entregador_id, entidade_id=None):
             SET status = 'entregue', responsavel_entrega_id = %s, data_entrega = NOW()
             WHERE id = %s
         """
-        params = [entregador_id, id]
-        if entidade_id:
-            sql_up += " AND entidade_id = %s"
-            params.append(entidade_id)
-        cur.execute(sql_up, params)
+        cur.execute(sql_up, (entregador_id, id))
 
         cur.execute("UPDATE item_solicitacao SET status = 'atendido' WHERE solicitacao_id = %s", (id,))
 

@@ -43,10 +43,15 @@ def entidades_novo():
 
         if not nome:
             erros.append("O nome da entidade é obrigatório.")
+        if identificador:
+            entidade_existente = modelo_entidade.buscar_por_identificador(identificador)
+            if entidade_existente:
+                erros.append(f"Já existe uma entidade cadastrada com o identificador/CNPJ '{identificador}' ({entidade_existente['nome']}).")
 
         if not erros:
             try:
                 modelo_entidade.criar(entidade)
+                flash(f"Entidade '{nome}' cadastrada com sucesso!", "sucesso")
                 return redirect(url_for("admin.entidades_lista"))
             except Exception as e:
                 erros.append(f"Erro ao cadastrar entidade: {e}")
@@ -76,10 +81,15 @@ def entidades_editar(id):
 
         if not nome:
             erros.append("O nome da entidade é obrigatório.")
+        if identificador:
+            entidade_existente = modelo_entidade.buscar_por_identificador(identificador, exceto_id=id)
+            if entidade_existente:
+                erros.append(f"Já existe outra entidade cadastrada com o identificador/CNPJ '{identificador}' ({entidade_existente['nome']}).")
 
         if not erros:
             try:
                 modelo_entidade.atualizar(id, dados)
+                flash(f"Entidade '{nome}' atualizada com sucesso!", "sucesso")
                 return redirect(url_for("admin.entidades_lista"))
             except Exception as e:
                 erros.append(f"Erro ao atualizar entidade: {e}")
@@ -307,6 +317,8 @@ def usuarios_editar(id):
             erros.append("O login é obrigatório.")
         if not nome:
             erros.append("O nome do usuário é obrigatório.")
+        if id == usuario_logado.get("id") and status == 0:
+            erros.append("Você não pode inativar sua própria conta de usuário.")
         if nova_senha and len(nova_senha) < 4:
             erros.append("A nova senha deve possuir ao menos 4 caracteres.")
         if not perfil_ids:

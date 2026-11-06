@@ -26,15 +26,15 @@
 </ul>
 {% endif %}
 
-<form class="formulario" method="post" style="max-width: 800px;">
+<form class="formulario form_estreito" method="post">
     {% if is_admin %}
-    <div class="secao" style="margin-bottom: 25px;">
+    <div class="secao mb_grande">
         <h3>Entidade</h3>
-        <p style="font-size: 0.85rem; color: #666; margin-top: -5px; margin-bottom: 12px;">
+        <p class="texto_pequeno texto_fraco mb_medio">
             Como Super-Admin, selecione a entidade para a qual esta solicitação será destinada:
         </p>
         <label class="campo largo">
-            <select name="entidade_id" required onchange="window.location.href = '{{ url_for('solicitacoes.nova') }}?entidade_id=' + this.value;" style="width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 3px;">
+            <select class="largura_total" name="entidade_id" required onchange="window.location.href = '{{ url_for('solicitacoes.nova') }}?entidade_id=' + this.value;">
                 <option value="">Selecione a Entidade...</option>
                 {% for ent in entidades %}
                 <option value="{{ ent.id }}" {{ 'selected' if ent.id == entidade_selecionada }}>{{ ent.nome }}</option>
@@ -44,9 +44,9 @@
     </div>
     {% endif %}
 
-    <div class="secao" style="margin-bottom: 25px;">
+    <div class="secao mb_grande">
         <h3>Itens Solicitados</h3>
-        <p style="font-size: 0.85rem; color: #666; margin-top: -5px; margin-bottom: 15px;">
+        <p class="texto_pequeno texto_fraco mb_medio">
             Escolha o suprimento e a quantidade necessária.
         </p>
 
@@ -54,8 +54,8 @@
             <!-- Linha inicial de item -->
             <div class="item_linha_dinamica">
                 <div>
-                    <label style="font-size: 0.8rem; font-weight: bold; display: block; margin-bottom: 3px;">Suprimento</label>
-                    <select name="item_suprimento_id[]" required style="width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 3px;">
+                    <label class="texto_mini negrito bloco mb_mini">Suprimento</label>
+                    <select class="largura_total" name="item_suprimento_id[]" required>
                         <option value="">Selecione um suprimento...</option>
                         {% for s in suprimentos %}
                         <option value="{{ s.id }}">{{ s.nome }} ({{ s.unidade_medida or 'un' }}) - Estoque atual: {{ s.estoque_atual }}</option>
@@ -63,21 +63,21 @@
                     </select>
                 </div>
                 <div>
-                    <label style="font-size: 0.8rem; font-weight: bold; display: block; margin-bottom: 3px;">Quantidade</label>
-                    <input type="number" name="item_quantidade[]" min="1" value="1" required style="width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 3px;">
+                    <label class="texto_mini negrito bloco mb_mini">Quantidade</label>
+                    <input class="largura_total" type="number" name="item_quantidade[]" min="1" value="1" required>
                 </div>
-                <div style="padding-top: 18px;">
-                    <button type="button" class="btn_remover_item" onclick="removerLinha(this)" style="background: none; border: none; color: #c62828; font-size: 1.2rem; cursor: pointer;" title="Remover item">✕</button>
+                <div class="alinha_campo">
+                    <button type="button" class="btn_link_perigo btn_remover_item" onclick="removerLinha(this)" title="Remover item">✕</button>
                 </div>
             </div>
         </div>
 
-        <button type="button" class="botao botao_destaque" onclick="adicionarLinha()" style="margin-top: 10px;">
+        <button type="button" class="botao botao_destaque mt_pequeno" onclick="adicionarLinha()">
             + Adicionar outro suprimento
         </button>
     </div>
 
-    <div class="secao" style="margin-bottom: 25px;">
+    <div class="secao mb_grande">
         <h3>Justificativa / Observações</h3>
         <label class="campo largo">
             <textarea name="observacao" rows="3" placeholder="Informe o motivo da solicitação, setor de destino ou qualquer detalhe relevante..."></textarea>

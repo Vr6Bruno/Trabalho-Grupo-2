@@ -15,7 +15,7 @@
         <h2>Histórico de Movimentações</h2>
         <p>Registro cronológico e auditável das entradas e saídas de estoque.</p>
     </div>
-    <div style="display: flex; gap: 10px;">
+    <div class="linha">
         {% if item %}
         <a class="botao botao_destaque" href="{{ url_for('estoque.historico') }}">Ver Todas as Movimentações</a>
         {% endif %}
@@ -25,30 +25,30 @@
 
 {% if item %}
 <!-- CARD EM DESTAQUE DO ITEM SELECIONADO -->
-<div class="card_item_destaque" style="background: #fff; border: 1px solid #ddd; border-radius: 4px; padding: 20px; margin-bottom: 25px;">
-    <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 20px;">
+<div class="card_item_destaque caixa mb_grande">
+    <div class="linha_entre">
         <div>
-            <span style="font-size: 0.75rem; text-transform: uppercase; color: #888; font-weight: bold; letter-spacing: 0.5px;">Suprimento Selecionado</span>
-            <h3 style="margin: 4px 0 2px; font-size: 1.6rem; color: #001dbe;">{{ item.nome }}</h3>
+            <span class="texto_mini rotulo texto_claro negrito">Suprimento Selecionado</span>
+            <h3 class="texto_destaque texto_azul sem_margem">{{ item.nome }}</h3>
             {% if item.codigo_interno %}
-            <small style="color: #666;">Código interno: <code>{{ item.codigo_interno }}</code></small>
+            <small class="texto_fraco">Código interno: <code>{{ item.codigo_interno }}</code></small>
             {% endif %}
-            <div style="margin-top: 4px; font-size: 0.85rem; color: #555;">{{ item.entidade_nome }}</div>
+            <div class="mt_pequeno texto_pequeno texto_fraco">{{ item.entidade_nome }}</div>
         </div>
-        <div class="estoque_destaque_box" style="margin: 0;">
-            <div style="text-align: center;">
-                <span style="font-size: 0.75rem; text-transform: uppercase; color: #888; font-weight: bold; display: block;">Estoque Atual</span>
+        <div class="estoque_destaque_box sem_margem">
+            <div class="centro">
+                <span class="texto_mini rotulo texto_claro negrito bloco">Estoque Atual</span>
                 <span class="valor_destaque {{ 'vermelho' if item.situacao_estoque != 'normal' else 'verde' }}">
                     {{ item.estoque_atual }}
                 </span>
-                <small style="color: #666; display: block;">{{ item.unidade_medida or 'un' }}</small>
+                <small class="texto_fraco bloco">{{ item.unidade_medida or 'un' }}</small>
             </div>
-            <div style="text-align: center; border-left: 1px solid #eee; padding-left: 25px;">
-                <span style="font-size: 0.75rem; text-transform: uppercase; color: #888; font-weight: bold; display: block;">Estoque Mínimo</span>
-                <span style="font-size: 1.8rem; font-weight: 700; color: #b78103;">
+            <div class="centro divisor_esquerda">
+                <span class="texto_mini rotulo texto_claro negrito bloco">Estoque Mínimo</span>
+                <span class="texto_destaque negrito texto_amarelo">
                     {{ item.estoque_minimo }}
                 </span>
-                <small style="color: #666; display: block;">{{ item.unidade_medida or 'un' }}</small>
+                <small class="texto_fraco bloco">{{ item.unidade_medida or 'un' }}</small>
             </div>
         </div>
     </div>
@@ -57,15 +57,15 @@
 
 <!-- TABELA DE HISTÓRICO DE MOVIMENTAÇÕES -->
 <div class="box_tabela">
-    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
-        <h3 style="margin: 0; font-size: 1.15rem; color: #333;">
+    <div class="linha_entre mb_medio">
+        <h3 class="titulo_secao sem_margem">
             {% if item %}
             Movimentações de "{{ item.nome }}"
             {% else %}
             Todas as Movimentações de Estoque
             {% endif %}
         </h3>
-        <span style="font-size: 0.85rem; color: #666;">{{ historico|length }} registro(s) encontrado(s)</span>
+        <span class="texto_pequeno texto_fraco">{{ historico|length }} registro(s) encontrado(s)</span>
     </div>
 
     <table class="tabela">
@@ -76,10 +76,10 @@
                 <th data-tipo="texto">Suprimento</th>
                 {% endif %}
                 <th data-tipo="texto">Tipo</th>
-                <th data-tipo="numero" style="text-align: center;">Qtd</th>
-                <th data-tipo="numero" style="text-align: center;">Antes</th>
-                <th data-nosort style="text-align: center;">→</th>
-                <th data-tipo="numero" style="text-align: center;">Depois</th>
+                <th class="centro" data-tipo="numero">Qtd</th>
+                <th class="centro" data-tipo="numero">Antes</th>
+                <th class="centro" data-nosort>→</th>
+                <th class="centro" data-tipo="numero">Depois</th>
                 <th data-tipo="texto">Responsável</th>
                 <th data-tipo="texto">Origem / Observação</th>
             </tr>
@@ -88,37 +88,37 @@
             {% for m in historico %}
             <tr>
                 <td>
-                    <small style="color: #555; font-weight: 600;">{{ m.criado_em.strftime('%d/%m/%Y %H:%M') if m.criado_em else '-' }}</small>
+                    <small class="texto_fraco negrito">{{ m.criado_em.strftime('%d/%m/%Y %H:%M') if m.criado_em else '-' }}</small>
                 </td>
                 {% if not item %}
                 <td>
                     <strong>{{ m.suprimento_nome }}</strong>
-                    {% if m.codigo_interno %}<small style="color: #777;">({{ m.codigo_interno }})</small>{% endif %}
+                    {% if m.codigo_interno %}<small class="texto_fraco">({{ m.codigo_interno }})</small>{% endif %}
                 </td>
                 {% endif %}
                 <td>
                     {% if m.tipo == 'entrada' %}
-                    <span class="tipo_mov_badge tipo_entrada">🟢 Entrada</span>
+                    <span class="tipo_mov_badge tipo_entrada">Entrada</span>
                     {% elif m.tipo == 'saida' %}
-                    <span class="tipo_mov_badge tipo_saida">🔴 Saída</span>
+                    <span class="tipo_mov_badge tipo_saida">Saída</span>
                     {% else %}
-                    <span class="tipo_mov_badge tipo_ajuste">🟡 Ajuste</span>
+                    <span class="tipo_mov_badge tipo_ajuste">Ajuste</span>
                     {% endif %}
                 </td>
-                <td style="text-align: center; font-weight: bold;">{{ m.quantidade }}</td>
-                <td style="text-align: center; color: #666;">{{ m.quantidade_anterior }}</td>
-                <td style="text-align: center; color: #aaa;">→</td>
-                <td style="text-align: center;">
-                    <strong style="color: {{ '#2e7d32' if m.quantidade_posterior > m.quantidade_anterior else '#c62828' }};">
+                <td class="centro negrito">{{ m.quantidade }}</td>
+                <td class="centro texto_fraco">{{ m.quantidade_anterior }}</td>
+                <td class="centro texto_claro">→</td>
+                <td class="centro">
+                    <strong class="{{ 'texto_verde' if m.quantidade_posterior > m.quantidade_anterior else 'texto_vermelho' }}">
                         {{ m.quantidade_posterior }}
                     </strong>
                 </td>
                 <td><small>{{ m.usuario_nome }}</small></td>
                 <td>
-                    <small style="color: #555;">
+                    <small class="texto_fraco">
                         {{ m.observacao or '-' }}
                         {% if m.solicitacao_id %}
-                        <a href="{{ url_for('solicitacoes.detalhe', id=m.solicitacao_id) }}" class="tag_chamado" style="margin-left: 4px;">#{{ m.solicitacao_id }}</a>
+                        <a href="{{ url_for('solicitacoes.detalhe', id=m.solicitacao_id) }}" class="tag_chamado">#{{ m.solicitacao_id }}</a>
                         {% endif %}
                     </small>
                 </td>

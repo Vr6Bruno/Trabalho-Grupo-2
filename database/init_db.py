@@ -32,9 +32,32 @@ def inicializar_banco():
             res = cur.fetchone()
             if res and res.get("count", 0) == 0:
                 print("[*] Adaptando tabela legada 'suprimento' para multi-tenancy (adicionando entidade_id)...")
-                cur.execute("CREATE TABLE IF NOT EXISTS entidade (id INT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY, nome VARCHAR(150) NOT NULL, status TINYINT(1) NOT NULL DEFAULT 1)")
-                cur.execute("INSERT IGNORE INTO entidade (id, nome) VALUES (1, 'Estok Matriz')")
+                cur.execute("""
+                    CREATE TABLE IF NOT EXISTS entidade (
+                        id INT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
+                        nome VARCHAR(150) NOT NULL,
+                        identificador VARCHAR(50) NULL,
+                        status TINYINT(1) NOT NULL DEFAULT 1,
+                        UNIQUE KEY uq_entidade_identificador (identificador)
+                    )
+                """)
+                cur.execute("INSERT IGNORE INTO entidade (id, nome, identificador) VALUES (1, 'Estok Matriz', 'MATRIZ-01')")
                 cur.execute("ALTER TABLE suprimento ADD COLUMN entidade_id INT UNSIGNED NOT NULL DEFAULT 1 AFTER id")
+        except Exception:
+            pass
+
+        # Garante que a coluna 'identificador' exista na tabela 'entidade'
+        try:
+            cur.execute("""
+                SELECT COUNT(*) as count
+                FROM information_schema.COLUMNS
+                WHERE TABLE_SCHEMA = %s AND TABLE_NAME = 'entidade' AND COLUMN_NAME = 'identificador'
+            """, (Config.DB_NAME,))
+            res = cur.fetchone()
+            if res and res.get("count", 0) == 0:
+                print("[*] Adicionando coluna 'identificador' na tabela 'entidade'...")
+                cur.execute("ALTER TABLE entidade ADD COLUMN identificador VARCHAR(50) NULL AFTER nome")
+                cur.execute("ALTER TABLE entidade ADD UNIQUE KEY uq_entidade_identificador (identificador)")
         except Exception:
             pass
 

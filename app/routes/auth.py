@@ -1,8 +1,19 @@
+from urllib.parse import urlparse
 from flask import Blueprint, render_template, request, redirect, url_for, session, flash
 import app.models.usuario as modelo_usuario
 import app.models.entidade as modelo_entidade
 
 bp = Blueprint("auth", __name__)
+
+
+def is_safe_url(target):
+    """Garante que a URL seja estritamente relativa e interna para evitar Open Redirect (CWE-601)."""
+    if not target or not isinstance(target, str):
+        return False
+    target = target.strip()
+    parsed = urlparse(target)
+    # Rejeita esquemas (http, https, javascript), domínios externos e URLs com barra dupla //
+    return (parsed.scheme == "" and parsed.netloc == "" and target.startswith("/") and not target.startswith("//"))
 
 
 @bp.route("/login", methods=["GET", "POST"])
@@ -51,6 +62,9 @@ def login():
                 }
 
                 next_url = request.args.get("next")
+                if not is_safe_url(next_url):
+                    next_url = None
+
                 if usuario["perfil_codigo"] == "SUPER_ADMIN" and (not next_url or next_url == "/"):
                     return redirect(url_for("admin.entidades_lista"))
                 if usuario["perfil_codigo"] == "SOLICITANTE" and (not next_url or next_url == "/"):

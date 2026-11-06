@@ -183,11 +183,13 @@ def adicionar_item(id):
     if suprimento_id <= 0 or quantidade <= 0:
         flash("Informe um suprimento e quantidade válida.", "erro")
     else:
+        is_admin = usuario.get("perfil") == "SUPER_ADMIN"
         sucesso, msg = modelo_pedido.adicionar_item(
             pedido_id=id,
             suprimento_id=suprimento_id,
             quantidade_necessaria=quantidade,
-            observacao=observacao
+            observacao=observacao,
+            entidade_id=None if is_admin else usuario.get("entidade_id")
         )
         if sucesso:
             flash(msg, "sucesso")
@@ -200,7 +202,13 @@ def adicionar_item(id):
 @bp.route("/pedidos/<int:id>/remover-item/<int:item_id>", methods=["POST"])
 @roles_required("SUPER_ADMIN", "ADMIN", "GERENTE", "GESTOR")
 def remover_item(id, item_id):
-    sucesso, msg = modelo_pedido.remover_item(item_id=item_id, pedido_id=id)
+    usuario = session["usuario"]
+    is_admin = usuario.get("perfil") == "SUPER_ADMIN"
+    sucesso, msg = modelo_pedido.remover_item(
+        item_id=item_id,
+        pedido_id=id,
+        entidade_id=None if is_admin else usuario.get("entidade_id")
+    )
     if sucesso:
         flash(msg, "sucesso")
     else:

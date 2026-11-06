@@ -12,7 +12,8 @@ CREATE TABLE IF NOT EXISTS entidade (
     status          TINYINT(1)   NOT NULL DEFAULT 1, -- 1 = ativa, 0 = inativa
     criado_em       DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP,
     atualizado_em   DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    KEY idx_entidade_status (status)
+    KEY idx_entidade_status (status),
+    UNIQUE KEY uq_entidade_identificador (identificador)
 ) ENGINE=InnoDB;
 
 -- ============================================================================

@@ -28,7 +28,7 @@
         <strong>{{ resumo.aguardando_cotacao }}</strong>
         <span>Aguardando Cotação</span>
     </div>
-    <div class="card_pedido_stat laranja">
+    <div class="card_pedido_stat azul">
         <strong>{{ resumo.em_andamento }}</strong>
         <span>Em Andamento / Recebendo</span>
     </div>
@@ -93,7 +93,7 @@
             <tr>
                 <td><strong>#{{ p.id }}</strong></td>
                 {% if is_admin %}
-                <td><small style="color: #666; font-weight: bold;">{{ p.entidade_nome }}</small></td>
+                <td><small class="texto_fraco negrito">{{ p.entidade_nome }}</small></td>
                 {% endif %}
                 <td><strong>{{ p.nome }}</strong></td>
                 <td><small>{{ p.usuario_nome }}</small></td>

@@ -128,6 +128,13 @@ def pode_excluir(id):
 
 def excluir(id, entidade_id=None):
     """Exclui o suprimento caso não possua vínculos impeditivos."""
+    with conectar() as conn, conn.cursor() as cur:
+        if entidade_id is not None:
+            cur.execute("SELECT entidade_id FROM suprimento WHERE id = %s", (id,))
+            s = cur.fetchone()
+            if not s or s["entidade_id"] != entidade_id:
+                return False, "Suprimento não encontrado ou não pertence à sua entidade."
+
     pode, motivo = pode_excluir(id)
     if not pode:
         return False, motivo
@@ -140,5 +147,7 @@ def excluir(id, entidade_id=None):
 
     with conectar() as conn, conn.cursor() as cur:
         cur.execute(sql, params)
+        if cur.rowcount == 0:
+            return False, "Suprimento não encontrado ou não pertence à sua entidade."
         return True, "Suprimento excluído com sucesso."
 

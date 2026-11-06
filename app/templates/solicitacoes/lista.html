@@ -15,9 +15,9 @@
         <h2>Solicitações de Recursos</h2>
         <p>Acompanhe os pedidos de suprimentos feitos pelos setores até a entrega final.</p>
     </div>
-    <div style="display: flex; gap: 10px;">
+    <div class="linha">
         {% if pode_operar %}
-        <a class="botao botao_destaque" href="{{ url_for('solicitacoes.compilado') }}">📦 Compilado Operacional</a>
+        <a class="botao botao_destaque" href="{{ url_for('solicitacoes.compilado') }}">Compilado Operacional</a>
         {% endif %}
         <a class="botao botao_primario" href="{{ url_for('solicitacoes.nova') }}">+ Nova Solicitação</a>
     </div>
@@ -25,19 +25,19 @@
 
 <!-- CARDS DE RESUMO -->
 <section class="resumo_solicitacoes">
-    <div class="card_solicitacao_stat azul">
+    <div class="card_solicitacao_stat amarelo">
         <strong>{{ resumo.solicitadas }}</strong>
         <span>Aguardando Validação</span>
     </div>
-    <div class="card_solicitacao_stat verde">
+    <div class="card_solicitacao_stat azul">
         <strong>{{ resumo.aprovadas }}</strong>
         <span>Aprovadas (P/ Separar)</span>
     </div>
-    <div class="card_solicitacao_stat roxo">
+    <div class="card_solicitacao_stat azul">
         <strong>{{ resumo.separadas }}</strong>
         <span>Separadas (P/ Entregar)</span>
     </div>
-    <div class="card_solicitacao_stat teal">
+    <div class="card_solicitacao_stat verde">
         <strong>{{ resumo.entregues }}</strong>
         <span>Entregues (Concluídas)</span>
     </div>
@@ -102,11 +102,11 @@
             <tr>
                 <td><strong>#{{ s.id }}</strong></td>
                 {% if is_admin %}
-                <td><small style="color: #666; font-weight: bold;">{{ s.entidade_nome }}</small></td>
+                <td><small class="texto_fraco negrito">{{ s.entidade_nome }}</small></td>
                 {% endif %}
                 <td>
                     <strong>{{ s.solicitante_nome }}</strong>
-                    <br><small style="color: #666;">@{{ s.solicitante_login }}</small>
+                    <br><small class="texto_fraco">@{{ s.solicitante_login }}</small>
                 </td>
                 <td>{{ s.criado_em.strftime('%d/%m/%Y %H:%M') if s.criado_em else '-' }}</td>
                 <td>{{ s.total_itens }} tipo(s)</td>

@@ -205,7 +205,7 @@ def relatorio_consolidado(entidade_id=None):
         INNER JOIN solicitacao sol ON sol.id = i.solicitacao_id
         INNER JOIN suprimento s ON s.id = i.suprimento_id
         INNER JOIN entidade e ON e.id = s.entidade_id
-        WHERE sol.status IN ('aprovada', 'separada')
+        WHERE sol.status IN ('aprovada', 'aguardando_estoque')
           AND i.status IN ('pendente', 'aprovado', 'separado')
           AND i.quantidade_solicitada > i.quantidade_atendida
     """

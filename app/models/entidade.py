@@ -37,6 +37,20 @@ def buscar(id):
 buscar_por_id = buscar
 
 
+def buscar_por_identificador(identificador, exceto_id=None):
+    """Busca entidade por identificador/CNPJ (case-insensitive)."""
+    if not identificador or not str(identificador).strip():
+        return None
+    sql = "SELECT id, nome, identificador, status FROM entidade WHERE LOWER(identificador) = LOWER(%s)"
+    params = [str(identificador).strip()]
+    if exceto_id:
+        sql += " AND id != %s"
+        params.append(exceto_id)
+    with conectar() as conn, conn.cursor() as cur:
+        cur.execute(sql, params)
+        return cur.fetchone()
+
+
 def criar(d):
     sql = """
         INSERT INTO entidade (nome, identificador, status)

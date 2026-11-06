@@ -210,12 +210,14 @@ def cancelar(id):
     usuario = session["usuario"]
     motivo = request.form.get("motivo", "").strip()
     is_admin = usuario.get("perfil") == "SUPER_ADMIN"
+    perfil = usuario.get("perfil")
 
     sucesso, msg = modelo_solicitacao.cancelar(
         id=id,
         usuario_id=usuario["id"],
         motivo=motivo,
-        entidade_id=None if is_admin else usuario.get("entidade_id")
+        entidade_id=None if is_admin else usuario.get("entidade_id"),
+        usuario_perfil=perfil
     )
     if sucesso:
         flash(msg, "sucesso")

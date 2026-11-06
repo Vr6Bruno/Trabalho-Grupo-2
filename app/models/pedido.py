@@ -132,6 +132,15 @@ def criar(entidade_id, usuario_id, nome, observacao=None, item_inicial=None):
 
 
         if item_inicial and item_inicial.get("suprimento_id") and item_inicial.get("quantidade"):
+            cur.execute("SELECT id, entidade_id, status FROM suprimento WHERE id = %s", (item_inicial["suprimento_id"],))
+            sup = cur.fetchone()
+            if not sup:
+                return False, "Suprimento inicial não encontrado."
+            if sup["entidade_id"] != entidade_id:
+                return False, "O suprimento selecionado pertence a outra entidade."
+            if int(sup["status"]) != 1:
+                return False, "O suprimento selecionado está inativo."
+
             cur.execute("""
                 INSERT INTO item_pedido_compra (pedido_id, suprimento_id, quantidade_necessaria, observacao)
                 VALUES (%s, %s, %s, %s)
@@ -145,12 +154,32 @@ def criar(entidade_id, usuario_id, nome, observacao=None, item_inicial=None):
         return True, pedido_id
 
 
-def adicionar_item(pedido_id, suprimento_id, quantidade_necessaria, observacao=None):
+def adicionar_item(pedido_id, suprimento_id, quantidade_necessaria, observacao=None, entidade_id=None):
     """Adiciona um suprimento ao pedido de compra."""
     if quantidade_necessaria <= 0:
         return False, "Quantidade deve ser maior que zero."
 
     with conectar() as conn, conn.cursor() as cur:
+        # Verifica se o pedido existe e pertence à entidade
+        cur.execute("SELECT id, entidade_id, status FROM pedido_compra WHERE id = %s", (pedido_id,))
+        ped = cur.fetchone()
+        if not ped:
+            return False, "Pedido de compra não encontrado."
+        if entidade_id and ped["entidade_id"] != entidade_id:
+            return False, "Você não possui permissão para alterar pedidos de outra entidade."
+        if ped["status"] not in ("em_montagem", "aguardando_cotacao"):
+            return False, f"Não é permitido adicionar itens a um pedido com status '{ped['status']}'."
+
+        # Verifica se o suprimento pertence à mesma entidade e está ativo
+        cur.execute("SELECT id, entidade_id, status, nome FROM suprimento WHERE id = %s", (suprimento_id,))
+        sup = cur.fetchone()
+        if not sup:
+            return False, "Suprimento não encontrado."
+        if sup["entidade_id"] != ped["entidade_id"]:
+            return False, "O suprimento selecionado pertence a outra entidade."
+        if int(sup["status"]) != 1:
+            return False, f"O suprimento '{sup['nome']}' está inativo e não pode ser adicionado ao pedido."
+
         # Verifica se o suprimento já está no pedido
         cur.execute("SELECT id, quantidade_necessaria FROM item_pedido_compra WHERE pedido_id = %s AND suprimento_id = %s", (pedido_id, suprimento_id))
         existente = cur.fetchone()
@@ -167,20 +196,55 @@ def adicionar_item(pedido_id, suprimento_id, quantidade_necessaria, observacao=N
         return True, "Item adicionado ao pedido de compra."
 
 
-def remover_item(item_id, pedido_id):
+def remover_item(item_id, pedido_id, entidade_id=None):
     """Remove um item do pedido."""
     with conectar() as conn, conn.cursor() as cur:
+        cur.execute("SELECT id, entidade_id, status FROM pedido_compra WHERE id = %s", (pedido_id,))
+        ped = cur.fetchone()
+        if not ped:
+            return False, "Pedido de compra não encontrado."
+        if entidade_id and ped["entidade_id"] != entidade_id:
+            return False, "Você não possui permissão para alterar pedidos de outra entidade."
+        if ped["status"] not in ("em_montagem", "aguardando_cotacao"):
+            return False, f"Não é permitido remover itens de um pedido com status '{ped['status']}'."
+
+        cur.execute("SELECT id, quantidade_recebida FROM item_pedido_compra WHERE id = %s AND pedido_id = %s", (item_id, pedido_id))
+        item = cur.fetchone()
+        if not item:
+            return False, "Item não encontrado no pedido."
+        if item["quantidade_recebida"] > 0:
+            return False, "Itens com recebimento já registrado não podem ser removidos."
+
         cur.execute("DELETE FROM item_pedido_compra WHERE id = %s AND pedido_id = %s", (item_id, pedido_id))
         return True, "Item removido do pedido."
 
 
 def atualizar_status(id, novo_status, observacao=None, entidade_id=None):
-    """Atualiza o status e notas do pedido de compra."""
+    """Atualiza o status e notas do pedido de compra com validação de fluxo."""
     status_validos = ("em_montagem", "aguardando_cotacao", "pedido_realizado", "parcialmente_recebido", "recebido", "cancelado")
     if novo_status not in status_validos:
         return False, "Status inválido."
 
+    transicoes_permitidas = {
+        "em_montagem": ["aguardando_cotacao", "pedido_realizado", "cancelado"],
+        "aguardando_cotacao": ["em_montagem", "pedido_realizado", "cancelado"],
+        "pedido_realizado": ["aguardando_cotacao", "parcialmente_recebido", "recebido", "cancelado"],
+        "parcialmente_recebido": ["recebido", "cancelado"],
+        "recebido": [],
+        "cancelado": []
+    }
+
     with conectar() as conn, conn.cursor() as cur:
+        cur.execute("SELECT id, entidade_id, status FROM pedido_compra WHERE id = %s", (id,))
+        ped = cur.fetchone()
+        if not ped:
+            return False, "Pedido de compra não encontrado."
+        if entidade_id and ped["entidade_id"] != entidade_id:
+            return False, "Você não possui permissão para alterar pedidos de outra entidade."
+
+        if novo_status != ped["status"] and novo_status not in transicoes_permitidas.get(ped["status"], []):
+            return False, f"Transição inválida: não é permitido alterar status de '{ped['status']}' para '{novo_status}'."
+
         # Ao marcar 'pedido_realizado', grava quantidade_pedida = quantidade_necessaria
         if novo_status == "pedido_realizado":
             cur.execute("""
@@ -198,10 +262,6 @@ def atualizar_status(id, novo_status, observacao=None, entidade_id=None):
 
         sql += " WHERE id = %s"
         params.append(id)
-
-        if entidade_id:
-            sql += " AND entidade_id = %s"
-            params.append(entidade_id)
 
         cur.execute(sql, params)
         return True, "Status do pedido atualizado com sucesso."
@@ -224,6 +284,8 @@ def receber_item(pedido_id, item_id, quantidade_recebida, usuario_id, entidade_i
         ped = cur.fetchone()
         if not ped:
             return False, "Pedido não encontrado."
+        if entidade_id and ped["entidade_id"] != entidade_id:
+            return False, "Você não possui permissão para receber itens de pedidos de outra entidade."
 
         if ped["status"] not in ("pedido_realizado", "parcialmente_recebido"):
             return False, f"Recebimento não permitido para pedidos no status '{ped['status']}'."
